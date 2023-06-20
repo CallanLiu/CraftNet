@@ -14,7 +14,7 @@ public class PingAppReqHandler : RequestHandler<App, PingAppReq, PingAppResp>
         if (i == 1000000)
         {
             i = 0;
-            Log.Debug("10w次Req...");
+            Log.Debug("1000000次Req...");
         }
 
         // Log.Debug("PingReq app: id={Id} name={Name}", self.Id, self.Name);
