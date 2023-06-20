@@ -1,2 +1,2 @@
 # XGFramework
-dotnet csharp gameserver
+C# Game Server Framework

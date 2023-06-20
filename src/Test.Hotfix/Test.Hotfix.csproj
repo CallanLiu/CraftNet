@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\XGFramework\XGFramework.csproj" />
+      <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
+    </ItemGroup>
+
+</Project>
