@@ -11,10 +11,10 @@ public class PingAppReqHandler : RequestHandler<App, PingAppReq, PingAppResp>
     protected override ValueTask On(App self, PingAppReq req, Reply reply)
     {
         ++i;
-        if (i == 1000000)
+        if (i == TestSystem.LogCount)
         {
             i = 0;
-            Log.Debug("1000000次Req...");
+            Log.Debug("{LogCount}次Req...", TestSystem.LogCount);
         }
 
         // Log.Debug("PingReq app: id={Id} name={Name}", self.Id, self.Name);

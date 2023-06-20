@@ -27,8 +27,8 @@ public class AgentMessageFilter : MessageFilter<Agent>
         Console.WriteLine($"拦截Agent消息:{context.Context.Opcode}");
 
         // 外部消息: 
-        //  1.内部发送给Agent想回给客户端的Message/Response
-        //  2.收到客户端的Message/Request
+        //  2.内部发送给Agent想回给客户端的Message/Response
+        //  1.收到客户端的Message/Request
         // 无法区分Message方向，需要个标记，表示消息方向。是来自客户端还是来自内部的Actor.
 
         if (actorMessage.Extra == 2)
