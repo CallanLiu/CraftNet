@@ -82,4 +82,14 @@ public partial class App : IApp
     {
         return $"{Name}_{Id}";
     }
+
+    private readonly IStateCollection _states = new StateCollection();
+
+    public T GetState<T>() => _states.GetState<T>();
+
+    public T AddState<T>() where T : new() => _states.AddState<T>();
+
+    public T AddState<T>(T ins) => _states.AddState(ins);
+
+    public bool RemoveState<T>() => _states.RemoveState<T>();
 }

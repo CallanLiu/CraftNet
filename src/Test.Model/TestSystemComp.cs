@@ -3,7 +3,7 @@ using XGFramework;
 
 namespace Test;
 
-public class TestSystemComp : IComp
+public class TestSystemComp
 {
     public Stopwatch               Stopwatch               = Stopwatch.StartNew();
     public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();

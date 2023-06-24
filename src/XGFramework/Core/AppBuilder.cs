@@ -7,8 +7,8 @@ public class AppBuilder
     private readonly IServiceProvider       _services;
     private readonly IPluginAssemblyService _pluginAssemblyService;
 
-    private List<IPluginAssemblyContext> plugins       = new List<IPluginAssemblyContext>();
-    private List<Action<App>>            appConfigures = new List<Action<App>>();
+    private readonly List<IPluginAssemblyContext> _plugins       = new();
+    private readonly List<Action<App>>            _appConfigures = new();
 
     public AppBuilder(IServiceProvider services)
     {
@@ -29,18 +29,23 @@ public class AppBuilder
             throw new ArgumentException($"插件程序集不存在: {name}", nameof(name));
         }
 
-        plugins.Add(pluginAssemblyContext);
+        _plugins.Add(pluginAssemblyContext);
     }
 
     public void AddSystem<T, TImpl>() where T : ISystemBase
         where TImpl : T
     {
-        appConfigures.Add(app => { app.AddSystem<T, TImpl>(); });
+        _appConfigures.Add(app => { app.AddSystem<T, TImpl>(); });
+    }
+
+    public void AddState<T>(T ins)
+    {
+        _appConfigures.Add(app => { app.AddState(ins); });
     }
 
     public IApp Build(AppId appId = default, string name = null)
     {
-        App app = new App(appId, _services, plugins, appConfigures, name);
+        App app = new App(appId, _services, _plugins, _appConfigures, name);
         return app;
     }
 }

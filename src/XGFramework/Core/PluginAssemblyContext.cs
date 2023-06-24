@@ -101,7 +101,7 @@ public class PluginAssemblyContext : IPluginAssemblyContext
         using var dll = File.OpenRead(HotfixDllName);
         using var pdb = File.OpenRead($"{Name}.Hotfix.pdb");
         HotfixAssembly = _assemblyLoadContext.LoadFromStream(dll, pdb);
-        Type type = HotfixAssembly.GetType($"{Name}.Hotfix.Main");
+        Type type = HotfixAssembly.GetType($"{Name}.Main");
         if (type != null)
         {
             MethodInfo loadMethodInfo = type.GetMethod("OnLoad",

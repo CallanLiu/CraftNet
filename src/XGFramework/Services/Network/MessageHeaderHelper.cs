@@ -30,7 +30,7 @@ public static class MessageHeaderHelper
     /// <param name="actorId"></param>
     public static Span<byte> WriteHead(ActorMessage message, PipeWriter output, ActorId actorId)
     {
-        int size = MinSize + message.Type is MessageType.Request ? RpcIdFieldSize : 0;
+        int size = MinSize + (message.Type is MessageType.Request ? RpcIdFieldSize : 0);
 
         // 分配
         Span<byte> headSpan = output.GetSpan(size);

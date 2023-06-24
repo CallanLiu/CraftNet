@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "App": {
+      "commandName": "Project",
+      "commandLineArgs": "--cfg=Server_Dev.xml --pid=1",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "nativeDebugging": false,
+      "remoteDebugEnabled": false
+    }
+  }
+}

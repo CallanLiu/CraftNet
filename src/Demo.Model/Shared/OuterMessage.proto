@@ -1,0 +1,20 @@
+//@opcode 10000
+
+syntax = "proto3";
+package Demo;
+option csharp_namespace = "Demo";
+
+message C2G_PingReq
+{
+
+}
+
+message C2G_PingResp
+{
+
+}
+
+message C2G_TestMsg
+{
+  int32 Value = 1;
+}

@@ -10,7 +10,7 @@ namespace XGFramework;
 public class MessageSystem : IMessageSystem
 {
     private readonly IActorService   _actorService;
-    private readonly MessageSystemComp _comp;
+    private readonly MessageSystemState _state;
     private readonly App               _app;
     private          uint              _rpcIds;
 
@@ -21,11 +21,11 @@ public class MessageSystem : IMessageSystem
 
         if (app.IsFirstLoad)
         {
-            _comp = app.AddComp<MessageSystemComp>();
+            _state = app.AddState<MessageSystemState>();
         }
 
-        _comp = app.GetComp<MessageSystemComp>();
-        _comp.Handlers.Clear();
+        _state = app.GetState<MessageSystemState>();
+        _state.Handlers.Clear();
     }
 
     public void Send<TMessage>(ActorId id, TMessage msg) where TMessage : IMessage, IMessageMeta
@@ -43,37 +43,37 @@ public class MessageSystem : IMessageSystem
 
     public void RegisterHandler<T>() where T : IMessageHandler, new()
     {
-        _comp.Handlers.Add(T.Opcode, new T());
+        _state.Handlers.Add(T.Opcode, new T());
     }
 
     public void RegisterFilter<T>() where T : IMessageFilter, new()
     {
-        if (_comp.MessageFilters is null)
+        if (_state.MessageFilters is null)
         {
-            _comp.MessageFilters = new IMessageFilter[T.Id + 1];
+            _state.MessageFilters = new IMessageFilter[T.Id + 1];
         }
-        else if (_comp.MessageFilters.Length <= T.Id)
+        else if (_state.MessageFilters.Length <= T.Id)
         {
-            var arr = _comp.MessageFilters;
-            _comp.MessageFilters = new IMessageFilter[T.Id + 1];
+            var arr = _state.MessageFilters;
+            _state.MessageFilters = new IMessageFilter[T.Id + 1];
             for (int i = 0; i < arr.Length; i++)
-                _comp.MessageFilters[i] = arr[i];
+                _state.MessageFilters[i] = arr[i];
         }
 
         // 如果不存在就创建
-        _comp.MessageFilters[T.Id] ??= new T();
+        _state.MessageFilters[T.Id] ??= new T();
     }
 
     public ActorId CreateActor(object target, bool isReentrant = false)
     {
-        return _actorService.Create(target, _app.Scheduler, _comp, isReentrant);
+        return _actorService.Create(target, _app.Scheduler, _state, isReentrant);
     }
 
     public ActorId CreateActor<TFilter>(object target, bool isReentrant = false) where TFilter : IMessageFilter
     {
-        if (_comp.MessageFilters is null || _comp.MessageFilters.Length <= TFilter.Id ||
-            _comp.MessageFilters[TFilter.Id] is null)
+        if (_state.MessageFilters is null || _state.MessageFilters.Length <= TFilter.Id ||
+            _state.MessageFilters[TFilter.Id] is null)
             throw new ArgumentException($"拦截器未注册: {typeof(TFilter).Name}", nameof(TFilter));
-        return _actorService.Create(target, _app.Scheduler, _comp, isReentrant, TFilter.Id);
+        return _actorService.Create(target, _app.Scheduler, _state, isReentrant, TFilter.Id);
     }
 }

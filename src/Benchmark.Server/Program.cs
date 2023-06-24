@@ -14,26 +14,34 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
-// 1.host初始化
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog();
-builder.Host.ConfigPluginAssembly(list => { list.Add("Test"); });
-builder.Host.UseXGServer();
-
-builder.Services.AddSingleton<ILocalPId>(new LocalPId { Value = 1 });
-builder.Services.AddHostedService<TestHostedService>();
-// builder.Services.AddSingleton<IWebSocketListener, TestWsListener>();
-
-builder.WebHost.UseKestrel(options =>
+try
 {
-    options.ListenLocalhost(20000, l => { l.UseConnectionHandler<ServerConnectionHandler>(); });
-});
+    // 1.host初始化
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Host.UseSerilog();
+    builder.Host.ConfigPluginAssembly(list => { list.Add("Test"); });
+    builder.Host.UseXGServer();
+    builder.Services.AddSingleton<IMessageSerializer, ProtoMessageSerializer>();
+    builder.Services.AddSingleton<ILocalPId>(new LocalPId { Value = 1 });
+    builder.Services.AddHostedService<TestHostedService>();
+    // builder.Services.AddSingleton<IWebSocketListener, TestWsListener>();
 
-var app = builder.Build();
+    builder.WebHost.UseKestrel(options =>
+    {
+        options.ListenLocalhost(20000, l => { l.UseConnectionHandler<ServerConnectionHandler>(); });
+    });
 
-// app.UseWebSockets();
-// app.Map("/ws", app.Services.GetService<IWebSocketListener>().Accept);
+    var app = builder.Build();
 
-// 3.运行host
-await app.RunAsync();
-Console.WriteLine("Hello, World!");
+    // app.UseWebSockets();
+    // app.Map("/ws", app.Services.GetService<IWebSocketListener>().Accept);
+
+    // 3.运行host
+    await app.RunAsync();
+}
+catch (Exception e)
+{
+    Log.Fatal(e, "");
+}
+
+Console.ReadKey();

@@ -23,13 +23,14 @@ public class MessageSender : IMessageSender
 
     private ConnectionContext _connectionContext;
 
-    private readonly Action<object>      _responseExecCallback;
-    private readonly Action<object>      _sendExecCallback;
-    private readonly Queue<ActorMessage> _queue;
-
+    private readonly Action<object>                                         _responseExecCallback;
+    private readonly Action<object>                                         _sendExecCallback;
+    private readonly Queue<ActorMessage>                                    _queue;
+    private readonly IMessageSerializer                                     _messageSerializer;
     private readonly Dictionary<uint, IResponseCompletionSource<IResponse>> _callbacks;
 
-    public MessageSender(ushort localPId, ushort pid, IPEndPoint endpoint, IConnectionFactory connectionFactory)
+    public MessageSender(ushort localPId, ushort pid, IPEndPoint endpoint, IConnectionFactory connectionFactory,
+        IMessageSerializer messageSerializer)
     {
         _localPId             = localPId;
         this.PId              = pid;
@@ -40,6 +41,7 @@ public class MessageSender : IMessageSender
         _responseExecCallback = ResponseExecCallback;
         _queue                = new Queue<ActorMessage>();
         _callbacks            = new Dictionary<uint, IResponseCompletionSource<IResponse>>();
+        _messageSerializer    = messageSerializer;
 
         _ = ConnectAsync(endpoint);
     }
@@ -77,9 +79,7 @@ public class MessageSender : IMessageSender
             ActorId    inverseActorId = new ActorId(_localPId, message.ActorId.Index);
             Span<byte> headSpan       = MessageHeaderHelper.WriteHead(message, output, inverseActorId);
 
-            // 发送body
-            Utf8JsonWriter jsonWriter = new Utf8JsonWriter(output);
-            JsonSerializer.Serialize(jsonWriter, message.Body);
+            _messageSerializer.Serialize(message.Body, output);
 
             // 写入长度字段
             BinaryPrimitives.WriteInt32BigEndian(headSpan, (int)(output.UnflushedBytes - 4));

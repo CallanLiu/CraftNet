@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
+using Serilog;
 using XGFramework.Services;
 
 namespace XGFramework;
@@ -17,23 +18,27 @@ public class SenderManager : ISenderManager
     private readonly ConcurrentDictionary<ushort, SenderEntry> _senders = new();
     private readonly IConnectionFactory                        _connectionFactory;
     private readonly ILocalPId                                 _localPId;
+    private readonly IMessageSerializer                        _messageSerializer;
 
-    public SenderManager(IConnectionFactory connectionFactory, ILocalPId localPId)
+    public SenderManager(IConnectionFactory connectionFactory, ILocalPId localPId, IMessageSerializer messageSerializer)
     {
         _connectionFactory = connectionFactory;
         _localPId          = localPId;
+        _messageSerializer = messageSerializer;
     }
 
-    public void AddServer(ushort pid, IPEndPoint endpoint)
+    public void AddRemote(ushort pid, IPEndPoint endpoint)
     {
         // 运行时。一个pid始终对应一个固定的endpoint，不会动态转移pid对应的endpoint。
         if (!_senders.TryAdd(pid, new SenderEntry() { EndPoint = endpoint, Sender = null }))
         {
             throw new ArgumentException($"pid已存在: {pid}, ip={endpoint}");
         }
+
+        Log.Information("添加Sender成员: Pid={Pid}, IP={IP}", pid, endpoint);
     }
 
-    public void RemoveServer(ushort pid)
+    public void RemoveRemote(ushort pid)
     {
         if (_senders.TryRemove(pid, out SenderEntry entry))
         {
@@ -66,7 +71,8 @@ public class SenderManager : ISenderManager
                 return null;
 
             // 创建
-            entry.Sender = new MessageSender(_localPId.Value, pid, entry.EndPoint, _connectionFactory);
+            entry.Sender = new MessageSender(_localPId.Value, pid, entry.EndPoint, _connectionFactory,
+                _messageSerializer);
             return entry.Sender;
         }
     }

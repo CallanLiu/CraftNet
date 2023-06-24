@@ -1,0 +1,15 @@
+//@opcode 1
+
+syntax = "proto3";
+package Demo;
+option csharp_namespace = "Demo";
+
+message Login2G_GetTokenReq
+{
+  string Account = 1;
+}
+
+message Login2G_GetTokenResp
+{
+  int64 Token = 1;
+}

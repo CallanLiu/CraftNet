@@ -1,6 +1,6 @@
 ﻿namespace XGFramework;
 
-public class EventSystemComp : IComp
+public class EventSystemState
 {
     public List<object>[] EventHandlers { get; set; }
 }
@@ -8,31 +8,31 @@ public class EventSystemComp : IComp
 public class EventSystem : IEventSystem
 {
     private readonly App             _app;
-    private readonly EventSystemComp _comp;
+    private readonly EventSystemState _state;
 
     public EventSystem(App app)
     {
         _app = app;
         if (app.IsFirstLoad)
         {
-            _app.AddComp<EventSystemComp>();
+            _app.AddState<EventSystemState>();
         }
 
-        _comp = _app.GetComp<EventSystemComp>();
+        _state = _app.GetState<EventSystemState>();
 
-        _comp.EventHandlers = Array.Empty<List<object>>();
+        _state.EventHandlers = Array.Empty<List<object>>();
     }
 
     public void Trigger<TEvent>(TEvent e) where TEvent : IEvent
     {
         int eventId = IEvent.Id<TEvent>.Value;
-        if (_comp.EventHandlers is null or { Length: 0 })
+        if (_state.EventHandlers is null or { Length: 0 })
             return;
 
-        if (_comp.EventHandlers.Length <= eventId)
+        if (_state.EventHandlers.Length <= eventId)
             return;
 
-        List<object> handlers = _comp.EventHandlers[eventId];
+        List<object> handlers = _state.EventHandlers[eventId];
         if (handlers is null)
             return;
 
@@ -49,18 +49,18 @@ public class EventSystem : IEventSystem
 
         if (eventId > 10240)
             throw new Exception("最多10240种事件类型.");
-        if (_comp.EventHandlers.Length <= eventId)
+        if (_state.EventHandlers.Length <= eventId)
         {
-            var arr = _comp.EventHandlers;
+            var arr = _state.EventHandlers;
             Array.Resize(ref arr, eventId + 1);
-            _comp.EventHandlers = arr;
+            _state.EventHandlers = arr;
         }
 
-        List<object> handlers = _comp.EventHandlers[eventId];
+        List<object> handlers = _state.EventHandlers[eventId];
         if (handlers is null)
         {
             handlers                     = new List<object>();
-            _comp.EventHandlers[eventId] = handlers;
+            _state.EventHandlers[eventId] = handlers;
         }
 
         handlers.Add(new T());

@@ -8,13 +8,16 @@ namespace XGFramework;
 
 public class ServerConnectionHandler : ConnectionHandler, IRpcReply
 {
-    private readonly IActorService  _actorService;
-    private readonly ISenderManager _senderManager;
+    private readonly IActorService      _actorService;
+    private readonly ISenderManager     _senderManager;
+    private readonly IMessageSerializer _messageSerializer;
 
-    public ServerConnectionHandler(IActorService actorService, ISenderManager senderManager)
+    public ServerConnectionHandler(IActorService actorService, ISenderManager senderManager,
+        IMessageSerializer messageSerializer)
     {
-        _actorService  = actorService;
-        _senderManager = senderManager;
+        _actorService      = actorService;
+        _senderManager     = senderManager;
+        _messageSerializer = messageSerializer;
     }
 
     public override async Task OnConnectedAsync(ConnectionContext connection)
@@ -50,7 +53,7 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
             var buffer = result.Buffer;
             try
             {
-                while (TryParse(ref buffer, out ActorMessage message))
+                while (TryParse(_messageSerializer, ref buffer, out ActorMessage message))
                 {
                     if (message.Type is MessageType.Response)
                     {
@@ -82,25 +85,24 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
     /// 内部网络消息头: length[4] + actorId[8] + type[1] + opcode[2] + rpcId[4] + body ...
     /// length都要算,但不包括自己.
     /// </summary>
+    /// <param name="messageSerializer"></param>
     /// <param name="buffer"></param>
     /// <param name="message"></param>
     /// <returns></returns>
-    private static bool TryParse(ref ReadOnlySequence<byte> buffer, out ActorMessage message)
+    private static bool TryParse(IMessageSerializer messageSerializer, ref ReadOnlySequence<byte> buffer,
+        out ActorMessage message)
     {
         message = default;
-        if (buffer.Length < MessageHeaderHelper.MinSize)
-            return false;
 
         SequenceReader<byte> reader = new SequenceReader<byte>(buffer);
-        if (!reader.TryReadBigEndian(out int length))
+        if (!reader.TryReadBigEndian(out int length) || reader.Remaining < length + MessageHeaderHelper.LengthFieldSize)
             return false;
 
-        if (buffer.Length < length + MessageHeaderHelper.LengthFieldSize)
-            return false;
-
-        // 更新buffer，以便从缓冲区中裁剪已读取的消息。
+        // 整个消息长度
         buffer = buffer.Slice(length + MessageHeaderHelper.LengthFieldSize);
 
+        // 头
+        reader = new SequenceReader<byte>(reader.UnreadSequence.Slice(0, length));
         reader.TryReadBigEndian(out ulong actorId);
         reader.TryRead(out byte type);
         reader.TryReadBigEndian(out ushort opcode);
@@ -118,9 +120,7 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
             return false;
         }
 
-        // 先用json代替。
-        Utf8JsonReader jsonReader = new Utf8JsonReader(reader.UnreadSequence);
-        var            body       = JsonSerializer.Deserialize(ref jsonReader, t);
+        var body = messageSerializer.Deserialize(t, reader.UnreadSequence);
         message = new ActorMessage(type, actorId, opcode, (IMessageBase)body, rpcId);
         return true;
     }

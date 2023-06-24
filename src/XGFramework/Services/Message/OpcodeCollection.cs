@@ -1,4 +1,7 @@
-﻿namespace XGFramework.Services;
+﻿using System.Reflection;
+using Serilog;
+
+namespace XGFramework.Services;
 
 public sealed class OpcodeCollection : Singleton<OpcodeCollection>
 {
@@ -8,6 +11,29 @@ public sealed class OpcodeCollection : Singleton<OpcodeCollection>
     public void Add<T>() where T : IMessageBase, IMessageMeta
     {
         Add(typeof(T), T.Opcode);
+    }
+
+    public void Add(Assembly assembly)
+    {
+        Type[] types = assembly.GetTypes();
+        foreach (var type in types)
+        {
+            if (type.IsInterface || type.IsAbstract)
+                continue;
+
+            if (!typeof(IMessageBase).IsAssignableFrom(type))
+                continue;
+
+            PropertyInfo propertyInfo = type.GetProperty("Opcode");
+            if (propertyInfo is null)
+                continue;
+            object value = propertyInfo.GetValue(null);
+            if (value is null)
+                continue;
+
+            this.Add(type, (ushort)value);
+            Log.Debug("OpcodeCollection: {Type}={Op}", type.Name, value);
+        }
     }
 
     /// <summary>

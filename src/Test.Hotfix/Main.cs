@@ -1,15 +1,7 @@
-﻿using System.Diagnostics;
-using Serilog;
+﻿using Test.Hotfix;
 using XGFramework;
-using XGFramework.Services;
 
-namespace Test.Hotfix;
-
-public static class SystemGroup
-{
-    public const uint Player = 1;
-    public const uint Home   = 2;
-}
+namespace Test;
 
 /// <summary>
 /// 插件入口点
@@ -26,18 +18,14 @@ public static class Main
             messageSystem.CreateActor(app, true);
         }
 
-        messageSystem.RegisterHandler<TestWsMessageHandler>();
-        messageSystem.RegisterHandler<TestMessageHandler>();
-        messageSystem.RegisterHandler<PingHandler>();
         messageSystem.RegisterHandler<PingAppReqHandler>();
-        messageSystem.RegisterFilter<AgentMessageFilter>();
 
         if (app.Id.PId == 1) // server
         {
         }
-        else if (app.Id.PId == 2) // server
+        else if (app.Id.PId == 2) // client
         {
-            app.AddSystem<ITestSystem, TestSystem>();
+            app.AddSystem<IBenchmarkSystem, BenchmarkSystem>();
         }
     }
 }

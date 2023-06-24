@@ -5,13 +5,13 @@ namespace XGFramework.Services;
 public interface ISenderManager
 {
     /// <summary>
-    /// 添加一台服务器
+    /// 添加远程ip
     /// </summary>
     /// <param name="pid"></param>
     /// <param name="endpoint"></param>
-    void AddServer(ushort pid, IPEndPoint endpoint);
+    void AddRemote(ushort pid, IPEndPoint endpoint);
 
-    void RemoveServer(ushort pid);
+    void RemoveRemote(ushort pid);
 
     bool TryGet(ushort pid, out IMessageSender sender);
 
