@@ -14,34 +14,30 @@ public partial class App : IApp
     public uint Version { get; private set; }
     public IAppScheduler Scheduler { get; }
 
-    public bool IsFirstLoad => Version == 1;
+    public bool IsFirstLoad { get; private set; }
 
     // public Setup Setup { get; }
 
-    private readonly List<Action<App>> _configureCallbacks;
+    private readonly List<Action<App>> _loadConfigures;
+    private readonly List<Action<App>> _initConfigures;
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="services"></param>
-    /// <param name="plugins"></param>
-    /// <param name="configures"></param>
-    /// <param name="name"></param>
-    /// <param name="scheduler">指定调度器</param>
-    internal App(AppId id, IServiceProvider services, List<IPluginAssemblyContext> plugins,
-        List<Action<App>> configures,
-        string name, IAppScheduler scheduler = null)
+    /// <param name="data"></param>
+    internal App(AppId id, AppCreateData data)
     {
-        this.Name           = name;
-        Id                  = id;
-        Services            = services;
-        _plugins            = plugins;
-        _configureCallbacks = configures;
-        // Setup               = new Setup(this);
+        this.IsFirstLoad = true;
+        this.Name        = data.Name;
+        Id               = id;
+        Services         = data.Services;
+        _plugins         = data.Plugins;
+        _loadConfigures  = data.LoadConfigures;
+        _initConfigures  = data.InitConfigures;
 
         // 默认使用单线程调度器
-        this.Scheduler = scheduler ?? new SingleThreadScheduler(this);
+        this.Scheduler = data.Scheduler ?? new SingleThreadScheduler(this);
         this.Scheduler.Execute(OnLoad);
     }
 
@@ -54,27 +50,33 @@ public partial class App : IApp
             _groups.Clear();
             _systems = null;
 
-            // Setup.Enter(this.Version);
-
             // 每次都要执行
-            if (_configureCallbacks != null)
+            if (_loadConfigures != null)
             {
-                foreach (var a in _configureCallbacks)
+                if (this.IsFirstLoad)
+                {
+                    foreach (var a in _initConfigures)
+                        a(this);
+                }
+
+                foreach (var a in _loadConfigures)
                     a(this);
             }
 
             // 重新载入插件
             foreach (var ctx in _plugins)
             {
-                if (this.Version == 1)
+                if (this.IsFirstLoad)
+                {
                     ctx.OnAssemblyReloadEvent += () => this.Scheduler.Execute(OnLoad);
+                }
 
                 ctx.InvokeEntryPoint(this);
             }
         }
         finally
         {
-            // Setup.Exit();
+            this.IsFirstLoad = false;
         }
     }
 

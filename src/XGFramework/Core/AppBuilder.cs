@@ -7,8 +7,13 @@ public class AppBuilder
     private readonly IServiceProvider       _services;
     private readonly IPluginAssemblyService _pluginAssemblyService;
 
-    private readonly List<IPluginAssemblyContext> _plugins       = new();
-    private readonly List<Action<App>>            _appConfigures = new();
+    private readonly List<IPluginAssemblyContext> _plugins = new();
+
+    // 每次Load都会调用
+    private readonly List<Action<App>> _appLoadConfigures = new();
+
+    // 只有第一次load才会调用
+    private readonly List<Action<App>> _appInitConfigures = new();
 
     public AppBuilder(IServiceProvider services)
     {
@@ -35,17 +40,17 @@ public class AppBuilder
     public void AddSystem<T, TImpl>() where T : ISystemBase
         where TImpl : T
     {
-        _appConfigures.Add(app => { app.AddSystem<T, TImpl>(); });
+        _appLoadConfigures.Add(app => { app.AddSystem<T, TImpl>(); });
     }
 
     public void AddState<T>(T ins)
     {
-        _appConfigures.Add(app => { app.AddState(ins); });
+        _appInitConfigures.Add(app => { app.AddState(ins); });
     }
 
     public IApp Build(AppId appId = default, string name = null)
     {
-        App app = new App(appId, _services, _plugins, _appConfigures, name);
+        App app = new App(appId, new AppCreateData(name, _services, _plugins, _appInitConfigures, _appLoadConfigures));
         return app;
     }
 }

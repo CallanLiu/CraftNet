@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <!-- 定义一组服务器，内部将可相互连接 -->
-<Server Name="MMO服务端示例">
+<Server Name="服务端示例">
     <!-- 定义一个启动进程的配置: EndPoint内网IP地址,Urls对外需要监听的协议断开(http与ws是一起的，监听http即可。) Id:10,因为1,2被Benchmark使用了  -->
     <Process Id="1" EndPoint="127.0.0.1:20001" Urls="http://+:11000">
 
         <!--   登录服:用来登录认证以及分配网关    -->
         <App Index="1" Name="登录" Type="Login"/>
 
-        <!--   使用两个Gate进行负载客户端连接    -->
+        <!--   使用两个Gate进行负载客户端连接,并处理大厅相关逻辑。    -->
         <App Index="101" Name="网关1" Type="Gate"/>
         <App Index="102" Name="网关2" Type="Gate"/>
 
         <!--    游戏服:用来承载具体的游戏逻辑    -->
         <App Index="201" Name="游戏" Type="Game"/>
 
-        <!--   世界服:协调与跨服逻辑     -->
+        <!--   世界服:协调     -->
         <App Index="300" Name="世界服" Type="World"/>
     </Process>
 </Server>

@@ -26,6 +26,6 @@ public class Main
             }
         }
 
-        Log.Debug("创建APP：{Name}, {Type}", app.Name, appConfig.Type);
+        Log.Debug("Load APP：{Name}, {Type}", app.Name, appConfig.Type);
     }
 }

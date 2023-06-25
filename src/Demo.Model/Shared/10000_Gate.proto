@@ -1,0 +1,39 @@
+//@opcode 10000
+
+syntax = "proto3";
+package Demo;
+option csharp_namespace = "Demo";
+
+message C2G_PingReq
+{
+
+}
+
+message C2G_PingResp
+{
+  int64 ServerTime = 1;
+}
+
+// 登录
+message C2G_LoginReq
+{
+  string Account = 1;
+  string Password = 2;
+}
+
+message C2G_LoginResp
+{
+  int32 ErrCode = 1;
+}
+
+// 注册
+message C2G_RegisterReq
+{
+  string Account = 1;
+  string Password = 2;
+}
+
+message C2G_RegisterResp
+{
+  int32 ErrCode = 1;
+}

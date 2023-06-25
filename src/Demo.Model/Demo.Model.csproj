@@ -12,7 +12,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Shared/OuterMessage.proto" />
+        <AdditionalFiles Include="Shared\10000_Gate.proto" />
+        <AdditionalFiles Include="Shared\20000_World.proto" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,6 @@
+//@opcode 20000
+
+syntax = "proto3";
+package Demo;
+option csharp_namespace = "Demo";
+
