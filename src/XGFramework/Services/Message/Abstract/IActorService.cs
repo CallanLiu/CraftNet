@@ -32,8 +32,6 @@ public interface IResponse : IMessageBase
 /// </summary>
 public interface IActorService
 {
-    uint PId { get; }
-
     /// <summary>
     /// 投递一个消息(远程/本地)
     /// </summary>

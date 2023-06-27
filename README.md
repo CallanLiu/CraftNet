@@ -1,6 +1,6 @@
 # XGFramework
 
-一个极简、高效的 `C# Game Server Framework`
+一个极简、高效的 `C# Game Server Framework`，用于快速简单的开发`分布式游戏`服务端程序，支持`单进程多线程`与`多进程单线程`的部署方式。
 
 ## 框架说明
 

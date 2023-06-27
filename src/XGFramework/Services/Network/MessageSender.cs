@@ -1,7 +1,8 @@
 ﻿using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Net;
-using System.Text.Json;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using XGFramework.Services;
 
@@ -12,7 +13,11 @@ namespace XGFramework;
 /// </summary>
 public class MessageSender : IMessageSender
 {
-    private VThread _vThread;
+    const long TimeoutMinute = 1 * TimeSpan.TicksPerMinute; // 1分钟超时
+
+    readonly record struct RpcCallbackItem(IResponseCompletionSource<IResponse> Tcs, long SendTime);
+
+    private readonly VThread _vThread;
 
     private readonly ushort _localPId;
 
@@ -23,27 +28,38 @@ public class MessageSender : IMessageSender
 
     private ConnectionContext _connectionContext;
 
-    private readonly Action<object>                                         _responseExecCallback;
-    private readonly Action<object>                                         _sendExecCallback;
-    private readonly Queue<ActorMessage>                                    _queue;
-    private readonly IMessageSerializer                                     _messageSerializer;
-    private readonly Dictionary<uint, IResponseCompletionSource<IResponse>> _callbacks;
+    private readonly Action<object>                    _onTimerCallback;
+    private readonly Action<object>                    _responseExecCallback;
+    private readonly Action<object>                    _sendExecCallback;
+    private readonly Queue<ActorMessage>               _queue;
+    private readonly IMessageSerializer                _messageSerializer;
+    private readonly Dictionary<uint, RpcCallbackItem> _callbacks;
+    private readonly Queue<(uint, long)>               _timeoutQueue;
 
-    public MessageSender(ushort localPId, ushort pid, IPEndPoint endpoint, IConnectionFactory connectionFactory,
-        IMessageSerializer messageSerializer)
+    public MessageSender(ushort localPId, ushort pid, IPEndPoint endpoint, IServiceProvider services)
     {
         _localPId             = localPId;
         this.PId              = pid;
         RemoteEntPoint        = endpoint;
-        _connectionFactory    = connectionFactory;
         _vThread              = new VThread();
         _sendExecCallback     = SendExecCallback;
         _responseExecCallback = ResponseExecCallback;
         _queue                = new Queue<ActorMessage>();
-        _callbacks            = new Dictionary<uint, IResponseCompletionSource<IResponse>>();
-        _messageSerializer    = messageSerializer;
+        _callbacks            = new();
+        _onTimerCallback      = OnTimeout;
+        _connectionFactory    = services.GetService<IConnectionFactory>();
+        _messageSerializer    = services.GetService<IMessageSerializer>();
+
+        _timeoutQueue = new Queue<(uint, long)>();
+        ITimerService timerService = services.GetService<ITimerService>();
+        timerService.AddInterval(0, 1000, OnTimerCallback, null);
 
         _ = ConnectAsync(endpoint);
+    }
+
+    private void OnTimerCallback(ITimer timer)
+    {
+        _vThread.Schedule(_onTimerCallback, timer);
     }
 
     public void Send(ActorMessage message) => _vThread.Schedule(_sendExecCallback, message);
@@ -52,9 +68,25 @@ public class MessageSender : IMessageSender
     private void SendExecCallback(object obj)
     {
         ActorMessage message = (ActorMessage)obj;
-        _queue.Enqueue(message);
         if (message.Type == MessageType.Request)
-            _callbacks.Add(message.RpcId, message.Tcs);
+        {
+            var rpcCallbackItem = new RpcCallbackItem(message.Tcs, Stopwatch.GetTimestamp());
+            if (_callbacks.TryAdd(message.RpcId, rpcCallbackItem))
+            {
+                _timeoutQueue.Enqueue((message.RpcId, rpcCallbackItem.SendTime));
+                _queue.Enqueue(message);
+            }
+            else // rpcId溢出归零后，但字典中还有相同key就直接抛出异常。
+            {
+                message.Tcs.SetException(RpcIdOverflowException.Default);
+                return;
+            }
+        }
+        else
+        {
+            _queue.Enqueue(message);
+        }
+
         if (_connectionContext != null)
             SendAll();
     }
@@ -62,8 +94,9 @@ public class MessageSender : IMessageSender
     private void ResponseExecCallback(object obj)
     {
         ActorMessage message = (ActorMessage)obj;
-        if (_callbacks.TryGetValue(message.RpcId, out var tcs))
+        if (_callbacks.TryGetValue(message.RpcId, out var result))
         {
+            var (tcs, _) = result;
             _callbacks.Remove(message.RpcId);
             tcs.Complete((IResponse)message.Body);
         }
@@ -136,6 +169,31 @@ public class MessageSender : IMessageSender
             }
 
             await Task.Delay(2000);
+        }
+    }
+
+    private void OnTimeout(object state)
+    {
+        long now = Stopwatch.GetTimestamp();
+
+        while (_timeoutQueue.TryPeek(out var result))
+        {
+            var (key, sendTime) = result;
+
+            // 当rpcId已经不存在时
+            if (!_callbacks.TryGetValue(key, out var value))
+            {
+                _timeoutQueue.Dequeue();
+                continue;
+            }
+
+            // 最先发送的都还没过期
+            if (now - sendTime < TimeoutMinute)
+                break;
+
+            _timeoutQueue.Dequeue();
+            _callbacks.Remove(key);
+            value.Tcs.SetException(RpcTimeoutException.Default);
         }
     }
 }

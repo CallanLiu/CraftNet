@@ -9,8 +9,6 @@ public class ActorService : IActorService, IRpcReply
     private readonly ReaderWriterLockSlim _rwLockSlim = new(LockRecursionPolicy.NoRecursion);
     private readonly ILocalPId            _localPId;
 
-    public uint PId => _localPId.Value;
-
     public ActorService(ISenderManager senderManager, ILocalPId localPId)
     {
         _senderManager = senderManager;

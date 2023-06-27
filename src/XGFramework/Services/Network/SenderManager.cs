@@ -16,15 +16,13 @@ public class SenderManager : ISenderManager
 {
     private readonly object                                    _lockObj = new();
     private readonly ConcurrentDictionary<ushort, SenderEntry> _senders = new();
-    private readonly IConnectionFactory                        _connectionFactory;
     private readonly ILocalPId                                 _localPId;
-    private readonly IMessageSerializer                        _messageSerializer;
+    private readonly IServiceProvider                          _services;
 
-    public SenderManager(IConnectionFactory connectionFactory, ILocalPId localPId, IMessageSerializer messageSerializer)
+    public SenderManager(ILocalPId localPId, IServiceProvider services)
     {
-        _connectionFactory = connectionFactory;
-        _localPId          = localPId;
-        _messageSerializer = messageSerializer;
+        _localPId = localPId;
+        _services = services;
     }
 
     public void AddRemote(ushort pid, IPEndPoint endpoint)
@@ -71,8 +69,7 @@ public class SenderManager : ISenderManager
                 return null;
 
             // 创建
-            entry.Sender = new MessageSender(_localPId.Value, pid, entry.EndPoint, _connectionFactory,
-                _messageSerializer);
+            entry.Sender = new MessageSender(_localPId.Value, pid, entry.EndPoint, _services);
             return entry.Sender;
         }
     }

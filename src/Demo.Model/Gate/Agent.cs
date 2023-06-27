@@ -11,8 +11,6 @@ public class Agent : IDisposable
     
     public ActorId ActorId { get; set; }
 
-    
-
     public Agent(IAsyncDisposable asyncDisposable, Action<ushort, uint?, object> sendToClient)
     {
         _asyncDisposable   = asyncDisposable;

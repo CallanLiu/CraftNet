@@ -7,7 +7,7 @@ public class EventSystemState
 
 public class EventSystem : IEventSystem
 {
-    private readonly App             _app;
+    private readonly App              _app;
     private readonly EventSystemState _state;
 
     public EventSystem(App app)
@@ -43,12 +43,34 @@ public class EventSystem : IEventSystem
         }
     }
 
+    public void Trigger(int eventId, object arg = null)
+    {
+        if (_state.EventHandlers is null or { Length: 0 })
+            return;
+
+        if (_state.EventHandlers.Length <= eventId)
+            return;
+
+        List<object> handlers = _state.EventHandlers[eventId];
+        if (handlers is null)
+            return;
+
+        foreach (var handler in handlers)
+        {
+            if (handler is IXEventListener eventListener)
+            {
+                eventListener.On(arg);
+            }
+        }
+    }
+
     public void RegisterListener<T>() where T : IEventListener, new()
     {
         int eventId = T.EventId;
 
         if (eventId > 10240)
             throw new Exception("最多10240种事件类型.");
+
         if (_state.EventHandlers.Length <= eventId)
         {
             var arr = _state.EventHandlers;
@@ -59,7 +81,7 @@ public class EventSystem : IEventSystem
         List<object> handlers = _state.EventHandlers[eventId];
         if (handlers is null)
         {
-            handlers                     = new List<object>();
+            handlers                      = new List<object>();
             _state.EventHandlers[eventId] = handlers;
         }
 

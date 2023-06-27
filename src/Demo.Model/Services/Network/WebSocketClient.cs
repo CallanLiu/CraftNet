@@ -41,7 +41,7 @@ public class WebSocketClient : WebSocketConnection
     public override void OnReceiveMessage(in ReadResult result)
     {
         var buffer = result.Buffer;
-        if (!WsPacketParser.TryParse(ref buffer, out WsPacket packet)) return;
+        if (!WsPacket.TryParse(ref buffer, out WsPacket packet)) return;
 
         lock (_callbacks)
         {

@@ -4,11 +4,7 @@ namespace XGFramework.Services;
 
 public interface IResponseCompletionSource<TResponse>
 {
-    ushort Opcode { get; }
-
     void Complete(TResponse response);
-
-    void Complete(ushort opcode, TResponse response);
 
     void SetException(Exception error);
 }
@@ -22,17 +18,9 @@ public sealed class ResponseCompletionSource<TResponse> : IResponseCompletionSou
 {
     ManualResetValueTaskSourceCore<TResponse> core;
 
-    public ushort Opcode { get; private set; }
-
     public ValueTask<TResponse> AsValueTask() => new(this, core.Version);
 
     public void Complete(TResponse response) => SetResult(response);
-
-    public void Complete(ushort opcode, TResponse response)
-    {
-        this.Opcode = opcode;
-        this.SetResult(response);
-    }
 
     public void SetException(Exception error)
     {

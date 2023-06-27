@@ -13,6 +13,7 @@ public static class HostBuilderExtensions
             services.AddSingleton<IActorService, ActorService>();
             services.AddSingleton<ISenderManager, SenderManager>();
             services.AddSingleton<IMessageSerializer, MemoryPackMessageSerializer>();
+            services.AddSingleton<ITimerService, TimerWheel>();
             services.AddSocketConnectionFactory();
         });
         return self;
