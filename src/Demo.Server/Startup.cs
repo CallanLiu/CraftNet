@@ -24,11 +24,7 @@ public static class Startup
             ProcessConfig processConfig = startConfig.Current;
             if (string.IsNullOrEmpty(processConfig.Urls))
                 return;
-
-            // 内部
-            options.Listen(IPEndPoint.Parse(processConfig.EndPoint),
-                l => { l.UseConnectionHandler<ServerConnectionHandler>(); });
-
+            
             // 外部http与ws
             string[] urls = processConfig.Urls.Split(";");
             foreach (var url in urls)

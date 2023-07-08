@@ -5,7 +5,6 @@ namespace XGFramework;
 public partial class App : ISystemCollection
 {
     // 只提供快速获取(运行后无法再次改变顺序)
-    private readonly App                                 _app     = null;
     private readonly Dictionary<uint, List<ISystemBase>> _groups  = new();
     private          ISystemBase[]                       _systems = null;
 

@@ -11,19 +11,7 @@ namespace XGFramework;
 /// </summary>
 public static class PluginAssemblyServiceBuilder
 {
-    public static IHostBuilder ConfigPluginAssembly(this IHostBuilder self, Action<List<string>> action)
-    {
-        self.ConfigureServices(s =>
-        {
-            s.AddSingleton<IPluginAssemblyService, PluginAssemblyService>(services =>
-            {
-                List<string> list = new List<string>();
-                action?.Invoke(list);
-                return new PluginAssemblyService(list);
-            });
-        });
-        return null;
-    }
+
 }
 
 public class PluginAssemblyService : IPluginAssemblyService

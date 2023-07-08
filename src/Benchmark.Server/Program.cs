@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Net;
 using XGFramework;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -19,18 +20,17 @@ try
     // 1.host初始化
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
-    builder.Host.ConfigPluginAssembly(list => { list.Add("Test"); });
-    builder.Host.UseXGServer();
+
     builder.Services.AddSingleton<IMessageSerializer, ProtoMessageSerializer>();
-    builder.Services.AddSingleton<ILocalPId>(new LocalPId { Value = 1 });
     builder.Services.AddHostedService<TestHostedService>();
     // builder.Services.AddSingleton<IWebSocketListener, TestWsListener>();
 
-    builder.WebHost.UseKestrel(options =>
+    builder.WebHost.UseXGServer(1, xg =>
     {
-        options.ListenLocalhost(20000, l => { l.UseConnectionHandler<ServerConnectionHandler>(); });
+        xg.AddPlugin("Test");
+        xg.EndPoint = new IPEndPoint(IPAddress.Loopback, 20000);
     });
-
+    
     var app = builder.Build();
 
     // app.UseWebSockets();

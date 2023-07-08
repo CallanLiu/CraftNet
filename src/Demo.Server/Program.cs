@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Net;
 using Demo;
 using Demo.Network;
 using XGFramework;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using XGFramework.Services;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -31,10 +31,12 @@ if (startConfig is null)
 }
 
 builder.Services.AddSingleton(startConfig);
-builder.Services.AddSingleton<ILocalPId>(new LocalPId { Value = pid });
 builder.Services.AddSingleton<IWebSocketListener, WebSocketService>();
-builder.Host.ConfigPluginAssembly(list => { list.Add("Demo"); });
-builder.Host.UseXGServer();
+builder.WebHost.UseXGServer(pid, xg =>
+{
+    xg.AddPlugin("Demo");
+    xg.EndPoint = IPEndPoint.Parse(startConfig.Current.EndPoint);
+});
 
 Startup.ConfigureApps(builder, startConfig);
 
