@@ -1,6 +1,6 @@
 using MemoryPack;
 using ProtoBuf;
-using XGFramework.Services;
+using CraftNet.Services;
 
 namespace Test;
 

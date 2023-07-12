@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 using System.Xml.Serialization;
-using XGFramework.Services;
+using CraftNet.Services;
 
 namespace Demo;
 
@@ -15,9 +15,9 @@ public class StartConfig
 
     [XmlIgnore] public ProcessConfig Current { get; private set; }
 
-    [XmlIgnore] private Dictionary<string, List<AppConfig>> type2App = new();
+    [XmlIgnore] private Dictionary<AppType, List<AppConfig>> type2App = new();
 
-    public IReadOnlyList<AppConfig> GetAppConfigs(string type)
+    public IReadOnlyList<AppConfig> GetAppConfigs(AppType type)
     {
         type2App.TryGetValue(type, out var list);
         return list;
@@ -70,7 +70,7 @@ public class AppConfig
     [XmlAttribute] public string Name { get; set; }
 
     // [XmlAttribute] public string Bind { get; set; }
-    [XmlAttribute] public string Type { get; set; }
+    [XmlAttribute] public AppType Type { get; set; }
 
     // public BindingAddress GetBindingAddress() => string.IsNullOrEmpty(Bind) ? null : BindingAddress.Parse(Bind);
 }

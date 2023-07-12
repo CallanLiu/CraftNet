@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.IO.Pipelines;
 using ProtoBuf.Meta;
-using XGFramework.Services;
+using CraftNet.Services;
 
 namespace Test;
 

@@ -1,4 +1,4 @@
-using XGFramework;
+using CraftNet;
 
 namespace Test;
 

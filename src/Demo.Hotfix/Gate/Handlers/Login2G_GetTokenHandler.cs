@@ -1,6 +1,6 @@
 ﻿using Serilog;
-using XGFramework;
-using XGFramework.Services;
+using CraftNet;
+using CraftNet.Services;
 
 namespace Demo;
 

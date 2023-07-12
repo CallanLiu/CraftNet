@@ -1,14 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Net;
-using XGFramework;
+using CraftNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Test;
-using XGFramework.Services;
+using CraftNet.Services;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -25,7 +25,7 @@ try
     builder.Services.AddHostedService<TestHostedService>();
     // builder.Services.AddSingleton<IWebSocketListener, TestWsListener>();
 
-    builder.WebHost.UseXGServer(1, xg =>
+    builder.WebHost.UseCraftNet(1, xg =>
     {
         xg.AddPlugin("Test");
         xg.EndPoint = new IPEndPoint(IPAddress.Loopback, 20000);

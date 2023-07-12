@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using XGFramework;
+using CraftNet;
 
 namespace Demo;
 
@@ -10,7 +10,7 @@ public class AspNetCoreReloadSystem : IAspNetCoreReloadSystem
     public AspNetCoreReloadSystem(App app)
     {
         IPluginAssemblyService pluginAssemblyService = app.Services.GetService<IPluginAssemblyService>();
-        IPluginAssemblyContext assemblyContext       = pluginAssemblyService.Get("Demo");
+        IPluginAssemblyContext assemblyContext       = pluginAssemblyService.Get(PluginNames.Demo);
 
         // 载入可重载的程序集
         ApplicationPartManager partManager = app.Services.GetService<ApplicationPartManager>();

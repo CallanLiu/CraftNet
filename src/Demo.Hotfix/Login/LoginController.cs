@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using XGFramework;
-using XGFramework.Services;
+using CraftNet;
+using CraftNet.Services;
 
 namespace Demo;
 
@@ -27,12 +27,12 @@ public class LoginController : ControllerBase
     [HttpGet]
     public async Task<string> Login()
     {
-        var       gateList      = _startConfig.GetAppConfigs("Gate");
+        var       gateList      = _startConfig.GetAppConfigs(AppType.Gate);
         AppConfig gateAppConfig = gateList.Rand();
 
         Login2G_GetTokenResp resp =
             await _actorService.Call<Login2G_GetTokenResp>(gateAppConfig.ActorId, new Login2G_GetTokenReq());
-        
+
         return "hello:" + resp.Token;
     }
 }

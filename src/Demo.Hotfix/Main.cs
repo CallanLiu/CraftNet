@@ -1,5 +1,5 @@
 ﻿using Serilog;
-using XGFramework;
+using CraftNet;
 
 namespace Demo;
 
@@ -16,10 +16,10 @@ public class Main
             messageSystem.CreateActor(app, true);
         }
 
-        AppConfig appConfig = app.GetState<AppConfig>();
+        AppConfig appConfig = app.GetComponent<AppConfig>();
         switch (appConfig.Type)
         {
-            case "Gate":
+            case AppType.Gate:
             {
                 app.AddSystem<IGateSystem, GateSystem>();
                 break;

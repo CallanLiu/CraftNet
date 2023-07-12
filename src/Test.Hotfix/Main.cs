@@ -1,5 +1,5 @@
 ﻿using Test.Hotfix;
-using XGFramework;
+using CraftNet;
 
 namespace Test;
 

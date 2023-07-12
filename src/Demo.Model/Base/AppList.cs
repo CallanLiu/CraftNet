@@ -1,28 +1,49 @@
-﻿using XGFramework;
+﻿using CraftNet;
 
 namespace Demo;
 
+/// <summary>
+/// 本地创建的所有app
+/// </summary>
 public class AppList : Singleton<AppList>
 {
-    private Dictionary<string, List<IApp>> _apps = new Dictionary<string, List<IApp>>();
+    private readonly Dictionary<int, List<IApp>> _apps   = new Dictionary<int, List<IApp>>();
+    private readonly ReaderWriterLockSlim        _rwLock = new();
 
-    public IReadOnlyList<IApp> this[string type]
+    public IReadOnlyList<IApp> this[AppType type]
     {
         get
         {
-            _apps.TryGetValue(type, out var list);
-            return list;
+            try
+            {
+                _rwLock.EnterReadLock();
+                _apps.TryGetValue((int)type, out var list);
+                return list;
+            }
+            finally
+            {
+                _rwLock.ExitReadLock();
+            }
         }
     }
 
-    public void Add(string type, IApp app)
+    public void Add(AppType type, IApp app)
     {
-        if (!_apps.TryGetValue(type, out List<IApp> apps))
+        try
         {
-            apps = new List<IApp>();
-            _apps.Add(type, apps);
-        }
+            _rwLock.EnterWriteLock();
 
-        apps.Add(app);
+            if (!_apps.TryGetValue((int)type, out List<IApp> apps))
+            {
+                apps = new List<IApp>();
+                _apps.Add((int)type, apps);
+            }
+
+            apps.Add(app);
+        }
+        finally
+        {
+            _rwLock.ExitWriteLock();
+        }
     }
 }

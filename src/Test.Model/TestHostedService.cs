@@ -1,8 +1,9 @@
 ﻿using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using XGFramework;
-using XGFramework.Services;
+using CraftNet;
+using CraftNet.Services;
 
 namespace Test;
 
@@ -25,8 +26,9 @@ public class TestHostedService : BackgroundService
         _senderManager.AddRemote(2, IPEndPoint.Parse("127.0.0.1:20001"));
 
         // 注册网络消息
-        OpcodeCollection.Ins.Add<PingAppReq>();
-        OpcodeCollection.Ins.Add<PingAppResp>();
+        IMessageDescCollection messageDescCollection = _services.GetService<IMessageDescCollection>();
+        messageDescCollection.Add<PingAppReq>();
+        messageDescCollection.Add<PingAppResp>();
 
         // 创建测试App
         AppBuilder gateBuilder = new AppBuilder(_services);

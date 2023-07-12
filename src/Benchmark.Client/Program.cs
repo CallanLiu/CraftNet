@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Test;
-using XGFramework;
-using XGFramework.Services;
+using CraftNet;
+using CraftNet.Services;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -23,7 +23,7 @@ try
     builder.Services.AddSingleton<IMessageSerializer, ProtoMessageSerializer>();
     builder.Services.AddHostedService<TestHostedService>();
 
-    builder.WebHost.UseXGServer(2, xg =>
+    builder.WebHost.UseCraftNet(2, xg =>
     {
         xg.AddPlugin("Test");
         xg.EndPoint = new IPEndPoint(IPAddress.Loopback, 20001);

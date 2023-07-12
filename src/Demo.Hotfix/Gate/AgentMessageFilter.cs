@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using XGFramework.Services;
+using CraftNet.Services;
 
 namespace Demo;
 

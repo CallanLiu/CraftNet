@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Serilog;
-using XGFramework;
-using XGFramework.Services;
+using CraftNet;
+using CraftNet.Services;
 
 namespace Test.Hotfix;
 
@@ -23,10 +23,10 @@ public class BenchmarkSystem : IBenchmarkSystem
 
         if (_app.IsFirstLoad)
         {
-            app.AddState<TestSystemComp>();
+            app.AddComponent<TestSystemComp>();
         }
 
-        _comp = app.GetState<TestSystemComp>();
+        _comp = app.GetComponent<TestSystemComp>();
 
         // 让测试死循环退出来，不然热重载后，上个程序集无法释放。
         _comp.CancellationTokenSource.Cancel();

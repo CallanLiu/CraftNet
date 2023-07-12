@@ -3,7 +3,7 @@
 using System.Net;
 using Demo;
 using Demo.Network;
-using XGFramework;
+using CraftNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,9 +32,9 @@ if (startConfig is null)
 
 builder.Services.AddSingleton(startConfig);
 builder.Services.AddSingleton<IWebSocketListener, WebSocketService>();
-builder.WebHost.UseXGServer(pid, xg =>
+builder.WebHost.UseCraftNet(pid, xg =>
 {
-    xg.AddPlugin("Demo");
+    xg.AddPlugin(PluginNames.Demo);
     xg.EndPoint = IPEndPoint.Parse(startConfig.Current.EndPoint);
 });
 
