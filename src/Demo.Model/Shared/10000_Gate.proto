@@ -4,6 +4,12 @@ syntax = "proto3";
 package Demo;
 option csharp_namespace = "Demo";
 
+// 客户端连接上来收到的第一个消息
+message G2C_EncryptKeyMsg
+{
+  int32 Key = 1;
+}
+
 message C2G_PingReq
 {
 

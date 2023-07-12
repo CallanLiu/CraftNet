@@ -6,7 +6,7 @@ using CraftNet;
 
 namespace Demo.Network;
 
-public record struct WaitSendPacket(ushort Opcode, uint? RpcId, object Body);
+public record struct WaitSendPacket(ushort Opcode, uint? RpcId, object Body, uint Key);
 
 /// <summary>
 /// 封装对WebSocket基础读写
@@ -182,9 +182,9 @@ public abstract class WebSocketConnection : IAsyncDisposable
 
     protected abstract void OnSend(PipeWriter output, in WaitSendPacket packet);
 
-    public void Send(ushort opcode, uint? rpcId, object body)
+    public void Send(ushort opcode, uint? rpcId, object body, uint key)
     {
-        _channel.Writer.TryWrite(new WaitSendPacket(opcode, rpcId, body));
+        _channel.Writer.TryWrite(new WaitSendPacket(opcode, rpcId, body, key));
     }
 
     public virtual async ValueTask DisposeAsync()

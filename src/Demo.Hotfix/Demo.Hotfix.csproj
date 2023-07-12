@@ -15,8 +15,4 @@
       <ProjectReference Include="..\Demo.Model\Demo.Model.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Gate\Events\" />
-    </ItemGroup>
-
 </Project>

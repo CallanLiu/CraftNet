@@ -2,6 +2,7 @@
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Text.Json;
+using Chuan;
 using CraftNet.Services;
 
 namespace Demo.Network;
@@ -18,6 +19,8 @@ public class WebSocketClient : WebSocketConnection
     public static uint GetNextRpcId() => ++lastUsedRpcId;
 
     public static IMessageDescCollection MessageDescCollection;
+
+    private XRandom _inRandom, _outRandom;
 
     public static async Task<WebSocketClient> ConnectAsync(string url)
     {
@@ -43,7 +46,7 @@ public class WebSocketClient : WebSocketConnection
     public override void OnReceive(in ReadResult result)
     {
         var buffer = result.Buffer;
-        if (!NetPacketParser.TryParse(MessageDescCollection, ref buffer, out NetPacket packet)) return;
+        if (!NetPacketHelper.TryParse(MessageDescCollection, ref buffer, ref _inRandom, out NetPacket packet)) return;
 
         lock (_callbacks)
         {
@@ -65,31 +68,7 @@ public class WebSocketClient : WebSocketConnection
 
     protected override void OnSend(PipeWriter output, in WaitSendPacket packet)
     {
-        if (packet.RpcId is null)
-        {
-            // 写入头: type[1]+opcode[2]
-            Memory<byte> buffer = Transport.Output.GetMemory(3);
-            buffer.Span[0] = MessageType.Message;
-            BinaryPrimitives.WriteUInt16BigEndian(buffer.Span[1..], packet.Opcode);
-            Transport.Output.Advance(3);
-
-            // 写入body
-            Utf8JsonWriter jsonWriter = new Utf8JsonWriter(Transport.Output);
-            JsonSerializer.Serialize(jsonWriter, packet.Body);
-        }
-        else
-        {
-            // 写入头: type[1]+opcode[2]+rpcId[4]
-            Memory<byte> buffer = Transport.Output.GetMemory(7);
-            buffer.Span[0] = MessageType.Request;
-            BinaryPrimitives.WriteUInt16BigEndian(buffer.Span.Slice(1, 2), packet.Opcode);
-            BinaryPrimitives.WriteUInt32BigEndian(buffer.Span.Slice(3, 4), packet.RpcId.Value);
-            Transport.Output.Advance(7);
-
-            // 写入body
-            Utf8JsonWriter jsonWriter = new Utf8JsonWriter(Transport.Output);
-            JsonSerializer.Serialize(jsonWriter, packet.Body);
-        }
+        NetPacketHelper.Send(MessageDescCollection, output, in packet);
     }
 
     public override async ValueTask DisposeAsync()
@@ -107,7 +86,7 @@ public class WebSocketClient : WebSocketConnection
     public void Send<T>(T msg) where T : IMessage, IMessageMeta
     {
         ushort opcode = T.Opcode;
-        this.Send(opcode, null, msg);
+        this.Send(opcode, null, msg, _outRandom.RandomInt());
     }
 
     public ValueTask<IResponse> Call<T>(T req) where T : IRequest, IMessageMeta
@@ -115,7 +94,7 @@ public class WebSocketClient : WebSocketConnection
         uint   rpcId  = GetNextRpcId();
         ushort opcode = T.Opcode;
 
-        this.Send(opcode, rpcId, req);
+        this.Send(opcode, rpcId, req, _outRandom.RandomInt());
 
         ResponseCompletionSource<IResponse> tcs = ResponseCompletionSourcePool.Get<IResponse>();
 

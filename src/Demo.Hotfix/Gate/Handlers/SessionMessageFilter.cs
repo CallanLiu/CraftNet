@@ -4,12 +4,12 @@ using CraftNet.Services;
 
 namespace Demo;
 
-public class AgentMessageFilter : MessageFilter<Agent>
+public class SessionMessageFilter : MessageFilter<Session>
 {
     private readonly IActorService   _actorService;
     private readonly HashSet<ushort> _set;
 
-    public AgentMessageFilter()
+    public SessionMessageFilter()
     {
         _actorService = App.Services.GetService<IActorService>();
         _set = new HashSet<ushort>
@@ -23,7 +23,7 @@ public class AgentMessageFilter : MessageFilter<Agent>
         return opcode >= 10000;
     }
 
-    protected override async ValueTask<bool> On(Agent self, MessageFilterContext context)
+    protected override async ValueTask<bool> On(Session self, MessageFilterContext context)
     {
         ActorMessage actorMessage = context.Context;
         if (actorMessage.Extra == 0) // 默认值0，内部处理。
@@ -47,7 +47,7 @@ public class AgentMessageFilter : MessageFilter<Agent>
 
         // 外部消息: 
         //  1.收到客户端的Message/Request
-        //  2.内部发送给Agent想回给客户端的Message/Response
+        //  2.内部发送给Session想回给客户端的Message/Response
         // 无法区分Message方向，需要个标记，表示消息方向。是来自客户端还是来自内部的Actor.
 
         if (actorMessage.Extra == 1) // Extra=1客户端发上来的消息

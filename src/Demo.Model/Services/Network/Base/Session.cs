@@ -4,9 +4,9 @@ using CraftNet.Services;
 
 namespace Demo;
 
-public delegate void SendToClientAction(Agent agent, ushort opcode, uint? rpcId, object body);
+public delegate void SendToClientAction(ushort opcode, uint? rpcId, object body);
 
-public class Agent : Entity
+public class Session : Entity
 {
     private readonly SendToClientAction _sendToClient;
 
@@ -16,11 +16,11 @@ public class Agent : Entity
     public IPEndPoint ClientAddress { get; private set; }
 
     /// <summary>
-    /// 与Agent相关的ActorId
+    /// 与Session相关的ActorId
     /// </summary>
     public ActorId ActorId { get; set; }
 
-    public Agent(IPEndPoint clientAddress, SendToClientAction sendToClient)
+    public Session(IPEndPoint clientAddress, SendToClientAction sendToClient)
     {
         this._sendToClient = sendToClient;
         this.ClientAddress = clientAddress;
@@ -38,7 +38,7 @@ public class Agent : Entity
     /// </summary>
     /// <param name="opcode"></param>
     /// <param name="message"></param>
-    public void Send(ushort opcode, IMessage message) => _sendToClient?.Invoke(this, opcode, null, message);
+    public void Send(ushort opcode, IMessage message) => _sendToClient?.Invoke(opcode, null, message);
 
     /// <summary>
     /// 给客户端回应一个消息(回应Request)
@@ -47,5 +47,5 @@ public class Agent : Entity
     /// <param name="rpcId"></param>
     /// <param name="response"></param>
     public void Reply(ushort opcode, uint rpcId, IResponse response) =>
-        _sendToClient?.Invoke(this, opcode, rpcId, response);
+        _sendToClient?.Invoke(opcode, rpcId, response);
 }

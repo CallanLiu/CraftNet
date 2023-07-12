@@ -1,10 +1,10 @@
 {{
-    bool is_msg = true
-    if string.ends_with parent_class 'Msg'
+    is_msg = true
+    if string.ends_with name 'Msg'
         _t = ': IMessage, IMessageMeta'
-    else if string.ends_with parent_class 'Req'
+    else if string.ends_with name 'Req'
         _t = ': IRequest, IMessageMeta'
-    else if string.ends_with parent_class 'Resp'
+    else if string.ends_with name 'Resp'
         _t = ': IResponse, IMessageMeta'
     else 
         is_msg = false
