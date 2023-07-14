@@ -1,48 +1,66 @@
 ﻿using System.IO.Pipelines;
 using System.Net.WebSockets;
-using Chuan;
 using Demo.Network;
 using CraftNet;
 using CraftNet.Services;
+using Demo.Services.Network;
 
 namespace Demo;
 
 public class DemoWsServerConnection : WebSocketConnection
 {
     public readonly  IApp                   App;
-    private readonly IActorService          _actorService;
-    private          ActorId                _sessionActorId;
+    private          Session                _session;
     private readonly IMessageDescCollection _messageDescCollection;
 
-    // 加密opcode
-    private XRandom _outRandom;
-    private XRandom _inRandom;
-
-    public DemoWsServerConnection(WebSocket webSocket, IApp app, IActorService actorService,
-        IMessageDescCollection messageDescCollection) : base(webSocket)
+    public DemoWsServerConnection(WebSocket webSocket, IApp app, IMessageDescCollection messageDescCollection) :
+        base(webSocket)
     {
         App                    = app;
-        _actorService          = actorService;
         _messageDescCollection = messageDescCollection;
+    }
+
+    #region 网络线程
+
+    public async Task RunAsync()
+    {
+        // 创建Session
+        _session =
+            await EventHelper.InvokeAsync<NetworkConnectedFunc, Session>(this.App,
+                new NetworkConnectedFunc(null, this.SendToClient));
+
+        // 开始接收数据
+        await StartAsync();
+
+        // 切换到app上下文，然后在操作session。
+        await App.Scheduler.Yield();
+        _session.Dispose();
     }
 
     /// <summary>
     /// 来自网络线程
     /// </summary>
-    /// <param name="result"></param>
-    public override void OnReceive(in ReadResult result)
+    /// <param name="input"></param>
+    public override async ValueTask OnReceive(PipeReader input)
     {
+        if (!input.TryRead(out ReadResult result))
+            return;
+
         var buffer = result.Buffer;
-        if (!NetPacketHelper.TryParse(_messageDescCollection, ref buffer, ref _inRandom, out NetPacket packet))
+
+        // 切到App的调度上下文进行Session操作
+        await App.Scheduler.Yield();
+
+        // 解析消息
+        if (!NetPacketHelper.TryParse(_messageDescCollection, ref buffer, ref _session.InRandom, out NetPacket packet))
         {
-            // 对于ws而言只有opcode不对，直接断掉。
-            _ = this.DisposeAsync();
+            _session.Dispose();
             return;
         }
 
-        // 投递(线程安全)
-        _actorService.Post(_sessionActorId, packet.MsgType, packet.Opcode, packet.RpcId, packet.Body,
-            extra: 1);
+        // 已经处于线程安全环境，直接给入队消息即可。
+        _session.Mailbox.UnsafeEnqueue(new ActorMessage(packet.MsgType, _session.ActorId, packet.Opcode, packet.Body,
+            packet.RpcId, extra: 1));
     }
 
     protected override void OnSend(PipeWriter output, in WaitSendPacket packet)
@@ -50,28 +68,17 @@ public class DemoWsServerConnection : WebSocketConnection
         NetPacketHelper.Send(_messageDescCollection, output, packet);
     }
 
-    public async Task RunAsync()
-    {
-        _sessionActorId =
-            await EventSystemHelper.InvokeAsync<EventSessionConnected, ActorId>(this.App,
-                new EventSessionConnected(null, this.SendToClient));
+    #endregion
 
-        // 给客户端回应一个密钥，用于加密。
-        uint defaultValue = _outRandom.RandomInt();
-        int  seed         = Random.Shared.Next();
-        _inRandom  = new XRandom((ulong)seed);
-        _outRandom = new XRandom((ulong)seed);
-
-        // 给客户端发送第一个数据
-        this.Send(G2C_EncryptKeyMsg.Opcode, null, new G2C_EncryptKeyMsg { Key = seed }, defaultValue);
-
-        // 开始接收数据
-        await StartAsync();
-        await EventSystemHelper.TriggerAsync(this.App, new EventSessionDisconnected());
-    }
-
+    /// <summary>
+    /// 来自Session所在的App线程(安全可直接访问session)
+    /// </summary>
+    /// <param name="opcode"></param>
+    /// <param name="rpcId"></param>
+    /// <param name="body"></param>
     private void SendToClient(ushort opcode, uint? rpcId, object body)
     {
-        this.Send(opcode, rpcId, body, _outRandom.RandomInt());
+        uint key = _session.OutRandom.RandomInt();
+        this.Send(opcode, rpcId, body, key);
     }
 }

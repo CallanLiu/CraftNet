@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Chuan;
 using Demo.Entities;
 using CraftNet.Services;
 
@@ -20,6 +21,15 @@ public class Session : Entity
     /// </summary>
     public ActorId ActorId { get; set; }
 
+    /// <summary>
+    /// Actor消息队列
+    /// </summary>
+    public ActorMailbox Mailbox { get; set; }
+
+    // 用于加密
+    public XRandom InRandom  = new XRandom(0);
+    public XRandom OutRandom = new XRandom(0);
+
     public Session(IPEndPoint clientAddress, SendToClientAction sendToClient)
     {
         this._sendToClient = sendToClient;
@@ -38,7 +48,7 @@ public class Session : Entity
     /// </summary>
     /// <param name="opcode"></param>
     /// <param name="message"></param>
-    public void Send(ushort opcode, IMessage message) => _sendToClient?.Invoke(opcode, null, message);
+    public void Send(ushort opcode, IMessage message) => _sendToClient.Invoke(opcode, null, message);
 
     /// <summary>
     /// 给客户端回应一个消息(回应Request)
@@ -46,6 +56,5 @@ public class Session : Entity
     /// <param name="opcode"></param>
     /// <param name="rpcId"></param>
     /// <param name="response"></param>
-    public void Reply(ushort opcode, uint rpcId, IResponse response) =>
-        _sendToClient?.Invoke(opcode, rpcId, response);
+    public void Reply(ushort opcode, uint rpcId, IResponse response) => _sendToClient.Invoke(opcode, rpcId, response);
 }

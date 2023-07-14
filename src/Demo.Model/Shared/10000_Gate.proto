@@ -20,26 +20,13 @@ message C2G_PingResp
   int64 ServerTime = 1;
 }
 
-// 登录
-message C2G_LoginReq
+// 登录网关
+message C2G_LoginGateReq
 {
-  string Account = 1;
-  string Password = 2;
+  string Token = 1;
 }
 
-message C2G_LoginResp
+message C2G_LoginGateResp
 {
-  int32 ErrCode = 1;
-}
-
-// 注册
-message C2G_RegisterReq
-{
-  string Account = 1;
-  string Password = 2;
-}
-
-message C2G_RegisterResp
-{
-  int32 ErrCode = 1;
+  int32 Err = 1;
 }

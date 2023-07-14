@@ -41,7 +41,7 @@ public abstract class RequestHandler<TSelf, TReq, TResp> : IMessageHandler where
             this._context = context;
         }
 
-        public void Invoke(TResp resp) => _context.RpcReply?.Invoke(resp, _context);
+        public void Invoke(TResp resp) => _context.RpcReply?.OnRpcReply(resp, _context);
     }
 
     public static ushort Opcode => TReq.Opcode;

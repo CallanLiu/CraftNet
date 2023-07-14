@@ -15,7 +15,9 @@ public class ActorService : IActorService, IRpcReply
         _localPId      = localPId;
     }
 
-    public ActorId Create(object target, IAppScheduler scheduler, IMessageDispatcher dispatcher,
+
+    public ActorId Create(object target, IApp app,
+        IActorMessageDispatcher messageDispatcher,
         bool isReentrant = false, int? filterId = null)
     {
         try
@@ -23,10 +25,10 @@ public class ActorService : IActorService, IRpcReply
             _rwLockSlim.EnterWriteLock();
 
             // app类型
-            if (target is App app)
+            if (target is App tmpApp)
             {
-                ActorId      actorId      = app.Id;
-                ActorMailbox actorMailbox = new ActorMailbox(target, scheduler, dispatcher, isReentrant, filterId);
+                ActorId      actorId      = tmpApp.Id;
+                ActorMailbox actorMailbox = new ActorMailbox(target, app, messageDispatcher, isReentrant, filterId);
                 _inboxes.Add(actorId.Index, actorMailbox);
                 return actorId;
             }
@@ -36,7 +38,7 @@ public class ActorService : IActorService, IRpcReply
                     throw new Exception("已达最大Actor数量.");
 
                 ActorId      actorId      = new ActorId(_localPId.Value, index);
-                ActorMailbox actorMailbox = new ActorMailbox(target, scheduler, dispatcher, isReentrant, filterId);
+                ActorMailbox actorMailbox = new ActorMailbox(target, app, messageDispatcher, isReentrant, filterId);
                 _inboxes[index] = actorMailbox;
                 return actorId;
             }
@@ -105,7 +107,7 @@ public class ActorService : IActorService, IRpcReply
     /// </summary>
     /// <param name="resp"></param>
     /// <param name="context"></param>
-    public void Invoke(IResponse resp, ActorMessage context)
+    public void OnRpcReply(IResponse resp, ActorMessage context)
     {
         // Task会在其调度器中进行延续
         IResponseCompletionSource<IResponse> tcs = context.Tcs;

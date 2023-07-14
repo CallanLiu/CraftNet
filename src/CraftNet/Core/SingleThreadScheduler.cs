@@ -3,7 +3,7 @@
 /// <summary>
 /// 单线程的调度器
 /// </summary>
-public class SingleThreadScheduler : QueueTaskScheduler, IAppScheduler
+public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
 {
     private SingleWaiterAutoResetEvent workSignal = new();
     private Queue<WorkItem>            works      = new();
@@ -89,7 +89,7 @@ public class SingleThreadScheduler : QueueTaskScheduler, IAppScheduler
     /// 使用异步的方式，让其切换上下文。
     /// </summary>
     /// <returns></returns>
-    public IAppScheduler.YieldAwaitable Yield() => new(this);
+    public IScheduler.YieldAwaitable Yield() => new(this);
 
     /// <summary>
     /// 使用异步的循环

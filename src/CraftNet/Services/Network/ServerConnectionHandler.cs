@@ -120,7 +120,7 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
         return true;
     }
 
-    void IRpcReply.Invoke(IResponse resp, ActorMessage context)
+    void IRpcReply.OnRpcReply(IResponse resp, ActorMessage context)
     {
         if (_senderManager.TryGet(context.ActorId.PId, out IMessageSender sender))
         {

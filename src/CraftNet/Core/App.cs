@@ -12,7 +12,7 @@ public partial class App : IApp, IComponentCollection
     public string Name { get; }
 
     public uint Version { get; private set; }
-    public IAppScheduler Scheduler { get; }
+    public IScheduler Scheduler { get; }
 
     public bool IsFirstLoad { get; private set; }
 

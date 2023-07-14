@@ -6,4 +6,4 @@ public readonly record struct AppCreateData(
     List<IPluginAssemblyContext> Plugins,
     List<Action<App>> InitConfigures,
     List<Action<App>> LoadConfigures,
-    IAppScheduler Scheduler = null);
+    IScheduler Scheduler = null);

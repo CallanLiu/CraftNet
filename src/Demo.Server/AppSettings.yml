@@ -1,4 +1,0 @@
-Servers:
-  'dev':
-    pid: 10
-    list: [ 101,201,300 ]

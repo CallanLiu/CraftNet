@@ -44,7 +44,8 @@ public class StartConfig
                     config.type2App.Add(appConfig.Type, appConfigs);
                 }
 
-                appConfig.ActorId = new ActorId(processConfig.Id, appConfig.Index);
+                appConfig.ProcessConfig = processConfig;
+                appConfig.ActorId       = new ActorId(processConfig.Id, appConfig.Index);
                 appConfigs.Add(appConfig);
             }
         }
@@ -69,8 +70,11 @@ public class AppConfig
 
     [XmlAttribute] public string Name { get; set; }
 
-    // [XmlAttribute] public string Bind { get; set; }
     [XmlAttribute] public AppType Type { get; set; }
 
-    // public BindingAddress GetBindingAddress() => string.IsNullOrEmpty(Bind) ? null : BindingAddress.Parse(Bind);
+    /// <summary>
+    /// 所在进程配置
+    /// </summary>
+    [XmlIgnore]
+    public ProcessConfig ProcessConfig { get; internal set; }
 }

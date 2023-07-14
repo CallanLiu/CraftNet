@@ -6,7 +6,7 @@ namespace CraftNet;
 /// <summary>
 /// 
 /// </summary>
-public interface IAppScheduler
+public interface IScheduler
 {
     /// <summary>
     /// 用来切换到当前调度器上下文中
@@ -14,9 +14,9 @@ public interface IAppScheduler
     [StructLayout(LayoutKind.Sequential, Size = 1)]
     public readonly struct YieldAwaitable
     {
-        private readonly IAppScheduler _scheduler;
+        private readonly IScheduler _scheduler;
 
-        public YieldAwaitable(IAppScheduler scheduler)
+        public YieldAwaitable(IScheduler scheduler)
         {
             _scheduler = scheduler;
         }
@@ -26,7 +26,7 @@ public interface IAppScheduler
         [StructLayout(LayoutKind.Sequential, Size = 1)]
         public readonly struct YieldAwaiter : ICriticalNotifyCompletion
         {
-            private readonly IAppScheduler _scheduler;
+            private readonly IScheduler _scheduler;
 
             public bool IsCompleted => false;
 
@@ -34,7 +34,7 @@ public interface IAppScheduler
             {
             }
 
-            public YieldAwaiter(IAppScheduler scheduler)
+            public YieldAwaiter(IScheduler scheduler)
             {
                 _scheduler = scheduler;
             }

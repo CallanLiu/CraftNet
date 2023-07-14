@@ -1,8 +1,6 @@
-﻿using System.IO.Pipelines;
-using System.Net;
+﻿using System.Net;
 using Demo.Network;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -15,40 +13,9 @@ namespace Demo;
 
 public static class Startup
 {
-    public static void ConfigureApps(WebApplicationBuilder builder, StartConfig startConfig)
+    public static void ConfigureBuilder(this WebApplicationBuilder builder, StartConfig startConfig)
     {
         builder.WebHost.UseKestrel(options => { Bind(options, startConfig); });
-
-        static void Bind(KestrelServerOptions options, StartConfig startConfig)
-        {
-            ProcessConfig processConfig = startConfig.Current;
-            if (string.IsNullOrEmpty(processConfig.Urls))
-                return;
-
-            // 外部http与ws
-            string[] urls = processConfig.Urls.Split(";");
-            foreach (var url in urls)
-            {
-                BindingAddress address = BindingAddress.Parse(url);
-                if (!address.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                if (string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase))
-                {
-                    // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-                    // options = new LocalhostListenOptions(parsedAddress.Port);
-                    options.ListenLocalhost(address.Port);
-                }
-                else if (IPAddress.TryParse(address.Host, out IPAddress ip))
-                {
-                    options.Listen(new IPEndPoint(ip, address.Port));
-                }
-                else
-                {
-                    options.ListenAnyIP(address.Port);
-                }
-            }
-        }
 
         bool enableLogin = false;
         foreach (var appConfig in startConfig.Current.AppConfigs)
@@ -58,8 +25,8 @@ public static class Startup
                 enableLogin = true;
 
                 // 给login配置一下
+                builder.Services.AddSingleton<IWebSocketListener, WebSocketService>();
                 IMvcBuilder mvcBuilder = builder.Services.AddControllers();
-
                 builder.Services.AddSingleton<DynamicActionDescriptorChangeProvider>();
                 builder.Services.AddSingleton<IActionDescriptorChangeProvider>(services =>
                     services.GetService<DynamicActionDescriptorChangeProvider>());
@@ -67,7 +34,7 @@ public static class Startup
         }
     }
 
-    public static void CreateApps(WebApplication webApplication, StartConfig startConfig)
+    public static void Configure(this WebApplication webApplication, StartConfig startConfig)
     {
         IServiceProvider services = webApplication.Services;
         ILocalPId        localPId = services.GetService<ILocalPId>();
@@ -88,7 +55,7 @@ public static class Startup
             AppBuilder appBuilder = new AppBuilder(services);
             appBuilder.AddPlugin(PluginNames.Demo);
             appBuilder.AddSystem<IEventSystem, EventSystem>();
-            appBuilder.AddSystem<IMessageSystem, MessageSystem>();
+            appBuilder.AddSystem<IActorSystem, ActorSystem>();
             appBuilder.AddSystem<ITimerSystem, TimerSystem>();
             appBuilder.AddComponent(appConfig);
 
@@ -146,6 +113,37 @@ public static class Startup
 
             var app = appBuilder.Build(new AppId(localPId.Value, appConfig.Index), appConfig.Name);
             AppList.Ins.Add(appConfig.Type, app);
+        }
+    }
+
+    static void Bind(KestrelServerOptions options, StartConfig startConfig)
+    {
+        ProcessConfig processConfig = startConfig.Current;
+        if (string.IsNullOrEmpty(processConfig.Urls))
+            return;
+
+        // 外部http与ws
+        string[] urls = processConfig.Urls.Split(";");
+        foreach (var url in urls)
+        {
+            BindingAddress address = BindingAddress.Parse(url);
+            if (!address.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
+                // options = new LocalhostListenOptions(parsedAddress.Port);
+                options.ListenLocalhost(address.Port);
+            }
+            else if (IPAddress.TryParse(address.Host, out IPAddress ip))
+            {
+                options.Listen(new IPEndPoint(ip, address.Port));
+            }
+            else
+            {
+                options.ListenAnyIP(address.Port);
+            }
         }
     }
 }

@@ -65,12 +65,12 @@ public class BenchmarkSystem : IBenchmarkSystem
     {
         // 指定测试服的id
         AppId                   srvId         = new AppId(1, 0);
-        IMessageSystem          messageSystem = _app.GetSystem<IMessageSystem>();
+        IActorSystem          actorSystem = _app.GetSystem<IActorSystem>();
         Stopwatch               stopwatch     = _comp.Stopwatch;
         CancellationTokenSource cts           = _comp.CancellationTokenSource;
         while (cts.IsCancellationRequested == false)
         {
-            IResponse response = await messageSystem.Call(srvId, new PingAppReq());
+            IResponse response = await actorSystem.Call(srvId, new PingAppReq());
             if (Interlocked.Increment(ref _callCount) % LogCount == 0)
             {
                 stopwatch.Stop();

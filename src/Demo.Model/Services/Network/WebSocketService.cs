@@ -11,19 +11,17 @@ public class WebSocketService : WebSocketListener<DemoWsServerConnection>
     public static readonly List<IApp> Apps   = new();
     private static         int        _index = 0;
 
-    private readonly IActorService          _actorService;
     private readonly IMessageDescCollection _messageDescCollection;
 
-    public WebSocketService(IActorService actorService, IMessageDescCollection messageDescCollection)
+    public WebSocketService(IMessageDescCollection messageDescCollection)
     {
-        _actorService          = actorService;
         _messageDescCollection = messageDescCollection;
     }
 
     protected override DemoWsServerConnection Create(WebSocket webSocket)
     {
         App app = (App)GetNextApp();
-        return new DemoWsServerConnection(webSocket, app, _actorService, _messageDescCollection);
+        return new DemoWsServerConnection(webSocket, app, _messageDescCollection);
     }
 
     private static IApp GetNextApp()

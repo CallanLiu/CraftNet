@@ -3,13 +3,17 @@ using Serilog;
 
 namespace CraftNet;
 
-public class MessageSystemState : IMessageDispatcher
+internal class ActorMessageSystemComp : IActorMessageDispatcher
 {
-    public readonly  Dictionary<ushort, object>    Handlers = new();
+    /// <summary>
+    /// Actor消息处理器
+    /// </summary>
+    public readonly Dictionary<ushort, object> MessageHandlers = new();
+
     public           IMessageFilter[]              MessageFilters;
     private readonly Func<ActorMessage, ValueTask> _func;
 
-    public MessageSystemState()
+    public ActorMessageSystemComp()
     {
         _func = Dispatch;
     }
@@ -22,7 +26,7 @@ public class MessageSystemState : IMessageDispatcher
         return filter;
     }
 
-    public async ValueTask Dispatch(int? filterId, ActorMessage actorMessage)
+    async ValueTask IActorMessageDispatcher.Dispatch(int? filterId, ActorMessage actorMessage)
     {
         // 有拦截器
         if (filterId.HasValue)
@@ -46,7 +50,7 @@ public class MessageSystemState : IMessageDispatcher
 
     private ValueTask Dispatch(ActorMessage actorMessage)
     {
-        if (Handlers.TryGetValue(actorMessage.Opcode, out object messageHandler))
+        if (MessageHandlers.TryGetValue(actorMessage.Opcode, out object messageHandler))
         {
             IMessageHandler handler = (IMessageHandler)messageHandler;
             return handler.Invoke(actorMessage);

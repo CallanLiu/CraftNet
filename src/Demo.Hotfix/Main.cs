@@ -10,10 +10,10 @@ public class Main
 {
     public static void OnLoad(App app)
     {
-        IMessageSystem messageSystem = app.GetSystem<IMessageSystem>();
+        IActorSystem actorSystem = app.GetSystem<IActorSystem>();
         if (app.IsFirstLoad)
         {
-            messageSystem.CreateActor(app, true);
+            actorSystem.CreateActor(app, true);
         }
 
         AppConfig appConfig = app.GetComponent<AppConfig>();

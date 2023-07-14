@@ -24,5 +24,5 @@ public interface IApp
     /// <summary>
     /// 调度器
     /// </summary>
-    public IAppScheduler Scheduler { get; }
+    public IScheduler Scheduler { get; }
 }

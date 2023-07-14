@@ -48,12 +48,12 @@ public interface IActorService
     /// 创建一个Actor
     /// </summary>
     /// <param name="target"></param>
-    /// <param name="scheduler"></param>
-    /// <param name="dispatcher"></param>
+    /// <param name="app"></param>
+    /// <param name="messageDispatcher"></param>
     /// <param name="isReentrant"></param>
     /// <param name="filterId"></param>
     /// <returns></returns>
-    ActorId Create(object target, IAppScheduler scheduler, IMessageDispatcher dispatcher,
+    ActorId Create(object target, IApp app, IActorMessageDispatcher messageDispatcher,
         bool isReentrant = false, int? filterId = null);
 
     ActorMailbox GetMailbox(ActorId actorId);

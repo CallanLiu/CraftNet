@@ -19,9 +19,4 @@
     <ItemGroup>
       <PackageReference Include="protobuf-net" Version="3.2.26" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="App\" />
-      <Folder Include="Modules\" />
-    </ItemGroup>
 </Project>

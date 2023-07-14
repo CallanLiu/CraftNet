@@ -88,21 +88,23 @@ public abstract class WebSocketConnection : IAsyncDisposable
                 if (flushResult.IsCanceled || flushResult.IsCompleted)
                     break;
 
+                await OnReceive(input);
 
-                // 接着解析, 绝对有数据
-                if (!input.TryRead(out ReadResult readResult)) continue;
-                try
-                {
-                    OnReceive(in readResult);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                finally // 消费完
-                {
-                    input.AdvanceTo(readResult.Buffer.End);
-                }
+                // // 接着解析, 绝对有数据
+                // if (!input.TryRead(out ReadResult readResult)) continue;
+                //
+                // try
+                // {
+                //
+                // }
+                // catch (Exception e)
+                // {
+                //     Console.WriteLine(e);
+                // }
+                // finally // 消费完
+                // {
+                //     input.AdvanceTo(readResult.Buffer.End);
+                // }
             }
         }
         catch (Exception e)
@@ -115,7 +117,7 @@ public abstract class WebSocketConnection : IAsyncDisposable
         }
     }
 
-    public abstract void OnReceive(in ReadResult readResult);
+    public abstract ValueTask OnReceive(PipeReader input);
 
     private async Task DoSend()
     {

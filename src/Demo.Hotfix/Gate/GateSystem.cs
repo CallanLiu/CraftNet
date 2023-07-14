@@ -11,9 +11,9 @@ public class GateSystem : IGateSystem
         _app = app;
 
         // 注册相关处理器
-        IMessageSystem messageSystem = _app.GetSystem<IMessageSystem>();
-        messageSystem.RegisterFilter<SessionMessageFilter>();
-        messageSystem.RegisterHandler<PingHandler>();
-        messageSystem.RegisterHandler<Login2G_GetTokenHandler>();
+        IActorSystem actorSystem = _app.GetSystem<IActorSystem>();
+        actorSystem.RegisterFilter<SessionMessageFilter>();
+        actorSystem.RegisterHandler<PingHandler>();
+        actorSystem.RegisterHandler<Login2G_GetTokenHandler>();
     }
 }

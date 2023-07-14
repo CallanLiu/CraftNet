@@ -1,7 +1,5 @@
-﻿using System.Buffers.Binary;
-using System.IO.Pipelines;
+﻿using System.IO.Pipelines;
 using System.Net.WebSockets;
-using System.Text.Json;
 using Chuan;
 using CraftNet.Services;
 
@@ -43,10 +41,15 @@ public class WebSocketClient : WebSocketConnection
     {
     }
 
-    public override void OnReceive(in ReadResult result)
+    public override ValueTask OnReceive(PipeReader input)
     {
+        if (!input.TryRead(out ReadResult result))
+            return ValueTask.CompletedTask;
+
         var buffer = result.Buffer;
-        if (!NetPacketHelper.TryParse(MessageDescCollection, ref buffer, ref _inRandom, out NetPacket packet)) return;
+
+        if (!NetPacketHelper.TryParse(MessageDescCollection, ref buffer, ref _inRandom, out NetPacket packet))
+            return ValueTask.CompletedTask;
 
         lock (_callbacks)
         {
@@ -64,6 +67,8 @@ public class WebSocketClient : WebSocketConnection
                 Handlers.TryGetValue(packet.Opcode, out object obj);
             }
         }
+
+        return ValueTask.CompletedTask;
     }
 
     protected override void OnSend(PipeWriter output, in WaitSendPacket packet)

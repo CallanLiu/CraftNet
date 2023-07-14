@@ -34,7 +34,7 @@ public class TestHostedService : BackgroundService
         AppBuilder gateBuilder = new AppBuilder(_services);
         gateBuilder.AddPlugin("Test");
         gateBuilder.AddSystem<IEventSystem, EventSystem>();
-        gateBuilder.AddSystem<IMessageSystem, MessageSystem>();
+        gateBuilder.AddSystem<IActorSystem, ActorSystem>();
         IApp gateApp = gateBuilder.Build(new AppId(_localPId.Value, 0), "测试");
         Log.Debug("创建App: {Info}", gateApp.ToString());
 

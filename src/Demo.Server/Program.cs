@@ -5,44 +5,54 @@ using Demo;
 using Demo.Network;
 using CraftNet;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Events;
+using Tomlyn.Extensions.Configuration;
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .Enrich.FromLogContext()
     .WriteTo.Console()
-    .CreateLogger();
+    .CreateBootstrapLogger();
 
-// 1.host初始化
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog();
-
-// 2.载入启动配置
-var    cfg             = builder.Configuration;
-ushort pid             = cfg.GetValue<ushort>("pid");
-string startConfigName = cfg.GetValue<string>("cfg");
-
-StartConfig startConfig = StartConfig.Load(pid, startConfigName);
-if (startConfig is null)
+try
 {
-    Log.Error("启动配置不存在: {Path}", startConfigName);
-    return;
+    // 1.host初始化
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services));
+
+    // 2.载入启动配置
+    var    cfg             = builder.Configuration;
+    ushort pid             = cfg.GetValue<ushort>("pid");
+    string startConfigName = cfg.GetValue<string>("cfg");
+
+    StartConfig startConfig = StartConfig.Load(pid, startConfigName);
+    if (startConfig is null)
+    {
+        Log.Error("启动配置不存在: {Path}", startConfigName);
+        return;
+    }
+
+    builder.Services.AddSingleton(startConfig);
+    builder.WebHost.UseCraftNet(pid, xg =>
+    {
+        xg.AddPlugin(PluginNames.Demo);
+        xg.EndPoint = IPEndPoint.Parse(startConfig.Current.EndPoint);
+    });
+
+    builder.ConfigureBuilder(startConfig);
+    var app = builder.Build();
+    app.Configure(startConfig);
+
+    // 3.运行host
+    await app.RunAsync();
 }
-
-builder.Services.AddSingleton(startConfig);
-builder.Services.AddSingleton<IWebSocketListener, WebSocketService>();
-builder.WebHost.UseCraftNet(pid, xg =>
+catch (Exception e)
 {
-    xg.AddPlugin(PluginNames.Demo);
-    xg.EndPoint = IPEndPoint.Parse(startConfig.Current.EndPoint);
-});
-
-Startup.ConfigureApps(builder, startConfig);
-
-var app = builder.Build();
-
-Startup.CreateApps(app, startConfig);
-
-// 3.运行host
-await app.RunAsync();
+    Log.Fatal(e, "");
+}

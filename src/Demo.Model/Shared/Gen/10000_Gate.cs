@@ -31,39 +31,19 @@ public partial class C2G_PingResp : IResponse, IMessageMeta
 }
 
 [ProtoContract]
-public partial class C2G_LoginReq : IRequest, IMessageMeta
+public partial class C2G_LoginGateReq : IRequest, IMessageMeta
 {
     public static ushort Opcode => 10003;
     ushort IMessageBase.GetOpcode() => Opcode;
-    [ProtoMember(1)] public string Account { get; set; }
-    [ProtoMember(2)] public string Password { get; set; }
+    [ProtoMember(1)] public string Token { get; set; }
         
 }
 
 [ProtoContract]
-public partial class C2G_LoginResp : IResponse, IMessageMeta
+public partial class C2G_LoginGateResp : IResponse, IMessageMeta
 {
     public static ushort Opcode => 10004;
     ushort IMessageBase.GetOpcode() => Opcode;
-    [ProtoMember(1)] public int ErrCode { get; set; }
-        
-}
-
-[ProtoContract]
-public partial class C2G_RegisterReq : IRequest, IMessageMeta
-{
-    public static ushort Opcode => 10005;
-    ushort IMessageBase.GetOpcode() => Opcode;
-    [ProtoMember(1)] public string Account { get; set; }
-    [ProtoMember(2)] public string Password { get; set; }
-        
-}
-
-[ProtoContract]
-public partial class C2G_RegisterResp : IResponse, IMessageMeta
-{
-    public static ushort Opcode => 10006;
-    ushort IMessageBase.GetOpcode() => Opcode;
-    [ProtoMember(1)] public int ErrCode { get; set; }
+    [ProtoMember(1)] public int Err { get; set; }
         
 }
