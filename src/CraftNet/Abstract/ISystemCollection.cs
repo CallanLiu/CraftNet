@@ -1,6 +1,6 @@
 ﻿namespace CraftNet;
 
-public interface ISystemCollection : IEnumerable<ISystemBase>
+public interface ISystemCollection
 {
     // 系统不会在运行过程中减少/增加类型
     private static int systemTypeIndexValue = 0;
@@ -18,14 +18,9 @@ public interface ISystemCollection : IEnumerable<ISystemBase>
         }
     }
 
+    IReadOnlyList<ISystemBase> AllSystems { get; }
+
     T AddSystem<T, TImpl>(uint group = 0) where T : ISystemBase where TImpl : T;
 
     T GetSystem<T>() where T : ISystemBase;
-
-    /// <summary>
-    /// 按组获取系统
-    /// </summary>
-    /// <param name="group"></param>
-    /// <returns></returns>
-    IReadOnlyList<ISystemBase> GetAllSystem(uint group = 0);
 }

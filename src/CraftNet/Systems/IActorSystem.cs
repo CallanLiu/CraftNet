@@ -11,16 +11,16 @@ public interface IActorSystem : ISystemBase<IActorSystem>, ISystemTypeId
     /// 注册消息处理器
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    void RegisterHandler<T>() where T : IMessageHandler, new();
+    void RegisterHandler<T>() where T : IMessageHandler;
 
     /// <summary>
     /// 注册消息拦截器
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    void RegisterFilter<T>() where T : IMessageFilter, new();
+    void RegisterFilter<T>() where T : IMessageFilter;
 
     /// <summary>
-    /// 成为Actor
+    /// 创建Actor并使用当前App的调度器
     /// </summary>
     /// <param name="target"></param>
     /// <param name="isReentrant">是否消息重入</param>
@@ -28,7 +28,7 @@ public interface IActorSystem : ISystemBase<IActorSystem>, ISystemTypeId
     ActorId CreateActor(object target, bool isReentrant = false);
 
     /// <summary>
-    /// 成为Actor并使指定一个拦截器
+    /// 创建Actor并使用当前App的调度器与指定一个拦截器
     /// </summary>
     /// <param name="target"></param>
     /// <param name="isReentrant"></param>

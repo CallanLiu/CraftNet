@@ -8,7 +8,7 @@ namespace CraftNet.Services;
 public sealed class ActorMailbox
 {
     private readonly object                  _target;
-    private readonly IApp                    _app;
+    private readonly IScheduler              _scheduler;
     private readonly Action<object>          _action;
     private readonly IActorMessageDispatcher _messageDispatcher;
     private readonly Queue<ActorMessage>     _queue;
@@ -22,9 +22,9 @@ public sealed class ActorMailbox
     public object Target => _target;
 
     /// <summary>
-    /// 所在App
+    /// 调度器
     /// </summary>
-    public IApp App => _app;
+    public IScheduler Scheduler => _scheduler;
 
     /// <summary>
     /// 是否可重入
@@ -39,17 +39,17 @@ public sealed class ActorMailbox
     /// 
     /// </summary>
     /// <param name="target">目标对象</param>
-    /// <param name="app">调度器</param>
+    /// <param name="scheduler">调度器</param>
     /// <param name="messageDispatcher">消息分发器</param>
     /// <param name="isReentrant">是否消息重入</param>
     /// <param name="filterId">拦截器</param>
-    public ActorMailbox(object target, IApp app,
+    public ActorMailbox(object target, IScheduler scheduler,
         IActorMessageDispatcher messageDispatcher,
         bool isReentrant,
         int? filterId)
     {
         this._target       = target;
-        this._app          = app;
+        this._scheduler    = scheduler;
         _action            = OnRun;
         _messageDispatcher = messageDispatcher;
         _queue             = new Queue<ActorMessage>();
@@ -61,7 +61,7 @@ public sealed class ActorMailbox
     /// 入队消息(线程安全)
     /// </summary>
     /// <param name="actorMessage"></param>
-    public void Enqueue(ActorMessage actorMessage) => this._app.Scheduler.Execute(_action, actorMessage);
+    public void Enqueue(ActorMessage actorMessage) => _scheduler.Execute(_action, actorMessage);
 
     /// <summary>
     /// 入队消息(此方法线程不安全)

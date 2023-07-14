@@ -28,12 +28,12 @@ public class ActorSystem : IActorSystem
         _comp.MessageHandlers.Clear();
     }
 
-    public void RegisterHandler<T>() where T : IMessageHandler, new()
+    public void RegisterHandler<T>() where T : IMessageHandler
     {
         _comp.MessageHandlers.Add(T.Opcode, ActivatorUtilities.CreateInstance<T>(_app.Services));
     }
 
-    public void RegisterFilter<T>() where T : IMessageFilter, new()
+    public void RegisterFilter<T>() where T : IMessageFilter
     {
         if (_comp.MessageFilters is null)
         {
@@ -68,7 +68,7 @@ public class ActorSystem : IActorSystem
 
     public ActorId CreateActor(object target, bool isReentrant = false)
     {
-        return _actorService.Create(target, _app, _comp, isReentrant);
+        return _actorService.Create(target, _app.Scheduler, _comp, isReentrant);
     }
 
     public ActorId CreateActor<TFilter>(object target, bool isReentrant = false) where TFilter : IMessageFilter
@@ -76,6 +76,6 @@ public class ActorSystem : IActorSystem
         if (_comp.MessageFilters is null || _comp.MessageFilters.Length <= TFilter.Id ||
             _comp.MessageFilters[TFilter.Id] is null)
             throw new ArgumentException($"拦截器未注册: {typeof(TFilter).Name}", nameof(TFilter));
-        return _actorService.Create(target, _app, _comp, isReentrant, TFilter.Id);
+        return _actorService.Create(target, _app.Scheduler, _comp, isReentrant, TFilter.Id);
     }
 }

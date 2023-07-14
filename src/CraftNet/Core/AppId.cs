@@ -9,7 +9,7 @@ public readonly struct AppId
     [FieldOffset(2)] public readonly ushort Index; // 最多65535个App
     [FieldOffset(0)] public readonly uint   Value;
 
-    public bool IsValid() => PId != 0 && Index != 0;
+    public bool IsValid() => PId != 0;
 
     public AppId(ushort pid, ushort index)
     {

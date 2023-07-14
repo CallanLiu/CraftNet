@@ -16,8 +16,6 @@ public partial class App : IApp, IComponentCollection
 
     public bool IsFirstLoad { get; private set; }
 
-    // public Setup Setup { get; }
-
     private readonly List<Action<App>> _loadConfigures;
     private readonly List<Action<App>> _initConfigures;
 
@@ -50,6 +48,7 @@ public partial class App : IApp, IComponentCollection
         {
             // 清理
             _groups.Clear();
+            _sortedSystems.Clear();
             _systems = null;
 
             // 每次都要执行
@@ -86,7 +85,6 @@ public partial class App : IApp, IComponentCollection
     {
         return $"{Name}_{Id}";
     }
-
 
     public T GetComponent<T>() => _components.GetComponent<T>();
 

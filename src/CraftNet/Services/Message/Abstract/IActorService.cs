@@ -1,7 +1,5 @@
 ﻿namespace CraftNet.Services;
 
-public readonly record struct WaitPostMessage(ulong Id, object Data, bool IsStream);
-
 /// <summary>
 /// 消息元数据
 /// </summary>
@@ -48,12 +46,12 @@ public interface IActorService
     /// 创建一个Actor
     /// </summary>
     /// <param name="target"></param>
-    /// <param name="app"></param>
+    /// <param name="scheduler"></param>
     /// <param name="messageDispatcher"></param>
     /// <param name="isReentrant"></param>
     /// <param name="filterId"></param>
     /// <returns></returns>
-    ActorId Create(object target, IApp app, IActorMessageDispatcher messageDispatcher,
+    ActorId Create(object target, IScheduler scheduler, IActorMessageDispatcher messageDispatcher,
         bool isReentrant = false, int? filterId = null);
 
     ActorMailbox GetMailbox(ActorId actorId);

@@ -15,11 +15,11 @@ public class StartConfig
 
     [XmlIgnore] public ProcessConfig Current { get; private set; }
 
-    [XmlIgnore] private Dictionary<AppType, List<AppConfig>> type2App = new();
+    [XmlIgnore] private readonly Dictionary<AppType, List<AppConfig>> _type2App = new();
 
     public IReadOnlyList<AppConfig> GetAppConfigs(AppType type)
     {
-        type2App.TryGetValue(type, out var list);
+        _type2App.TryGetValue(type, out var list);
         return list;
     }
 
@@ -29,7 +29,7 @@ public class StartConfig
         using XmlReader reader     = new XmlTextReader(path);
 
         StartConfig config = (StartConfig)serializer.Deserialize(reader);
-        config.PId = pid;
+        config!.PId = pid;
 
         foreach (var processConfig in config.Processes)
         {
@@ -38,10 +38,10 @@ public class StartConfig
 
             foreach (var appConfig in processConfig.AppConfigs)
             {
-                if (!config.type2App.TryGetValue(appConfig.Type, out List<AppConfig> appConfigs))
+                if (!config._type2App.TryGetValue(appConfig.Type, out List<AppConfig> appConfigs))
                 {
                     appConfigs = new List<AppConfig>();
-                    config.type2App.Add(appConfig.Type, appConfigs);
+                    config._type2App.Add(appConfig.Type, appConfigs);
                 }
 
                 appConfig.ProcessConfig = processConfig;

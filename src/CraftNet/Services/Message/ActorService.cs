@@ -15,8 +15,7 @@ public class ActorService : IActorService, IRpcReply
         _localPId      = localPId;
     }
 
-
-    public ActorId Create(object target, IApp app,
+    public ActorId Create(object target, IScheduler scheduler,
         IActorMessageDispatcher messageDispatcher,
         bool isReentrant = false, int? filterId = null)
     {
@@ -27,8 +26,9 @@ public class ActorService : IActorService, IRpcReply
             // app类型
             if (target is App tmpApp)
             {
-                ActorId      actorId      = tmpApp.Id;
-                ActorMailbox actorMailbox = new ActorMailbox(target, app, messageDispatcher, isReentrant, filterId);
+                ActorId actorId = tmpApp.Id;
+                ActorMailbox actorMailbox =
+                    new ActorMailbox(target, scheduler, messageDispatcher, isReentrant, filterId);
                 _inboxes.Add(actorId.Index, actorMailbox);
                 return actorId;
             }
@@ -37,8 +37,9 @@ public class ActorService : IActorService, IRpcReply
                 if (!_inboxes.TryAdd(null, out uint index))
                     throw new Exception("已达最大Actor数量.");
 
-                ActorId      actorId      = new ActorId(_localPId.Value, index);
-                ActorMailbox actorMailbox = new ActorMailbox(target, app, messageDispatcher, isReentrant, filterId);
+                ActorId actorId = new ActorId(_localPId.Value, index);
+                ActorMailbox actorMailbox =
+                    new ActorMailbox(target, scheduler, messageDispatcher, isReentrant, filterId);
                 _inboxes[index] = actorMailbox;
                 return actorId;
             }

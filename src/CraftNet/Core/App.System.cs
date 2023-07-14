@@ -1,13 +1,19 @@
-﻿using System.Collections;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace CraftNet;
 
 public partial class App : ISystemCollection
 {
-    // 只提供快速获取(运行后无法再次改变顺序)
-    private readonly Dictionary<uint, List<ISystemBase>> _groups  = new();
-    private          ISystemBase[]                       _systems = null;
+    // 分组的系统
+    private readonly Dictionary<uint, List<ISystemBase>> _groups = new();
+
+    // 无序
+    private ISystemBase[] _systems;
+
+    // 有序的
+    private readonly List<ISystemBase> _sortedSystems = new();
+
+    public IReadOnlyList<ISystemBase> AllSystems => _sortedSystems;
 
     public T AddSystem<T, TImpl>(uint group = 0) where T : ISystemBase
         where TImpl : T
@@ -34,7 +40,7 @@ public partial class App : ISystemCollection
         }
 
         list.Add(t);
-
+        _sortedSystems.Add(t);
         return t;
     }
 
@@ -48,29 +54,9 @@ public partial class App : ISystemCollection
         return (T)_systems[index];
     }
 
-    public IReadOnlyList<ISystemBase> GetAllSystem(uint group = 0)
+    public IReadOnlyList<ISystemBase> GetSystems(uint group = 0)
     {
         _groups.TryGetValue(group, out var list);
         return list;
-    }
-
-    public IEnumerator<ISystemBase> GetEnumerator()
-    {
-        if (_systems is null or { Length: 0 })
-            yield break;
-
-        // 使用组，里面的List将保证Add的顺序。
-        foreach (var list in _groups.Values)
-        {
-            foreach (var item in list)
-            {
-                yield return item;
-            }
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }

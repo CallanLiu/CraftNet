@@ -15,21 +15,36 @@ public static class Startup
 {
     public static void ConfigureBuilder(this WebApplicationBuilder builder, StartConfig startConfig)
     {
+        IServiceCollection services = builder.Services;
         builder.WebHost.UseKestrel(options => { Bind(options, startConfig); });
 
-        bool enableLogin = false;
+        HashSet<AppType> configured = new HashSet<AppType>();
+
+        bool ConfigOnce(AppConfig appConfig, AppType type)
+        {
+            if (appConfig.Type == type && !configured.Contains(appConfig.Type))
+            {
+                configured.Add(type);
+                return true;
+            }
+
+            return false;
+        }
+
         foreach (var appConfig in startConfig.Current.AppConfigs)
         {
-            if (appConfig.Type is AppType.Login && !enableLogin)
+            if (ConfigOnce(appConfig, AppType.Login))
             {
-                enableLogin = true;
-
                 // 给login配置一下
-                builder.Services.AddSingleton<IWebSocketListener, WebSocketService>();
-                IMvcBuilder mvcBuilder = builder.Services.AddControllers();
-                builder.Services.AddSingleton<DynamicActionDescriptorChangeProvider>();
-                builder.Services.AddSingleton<IActionDescriptorChangeProvider>(services =>
-                    services.GetService<DynamicActionDescriptorChangeProvider>());
+                services.AddSingleton<IWebSocketListener, WebSocketService>();
+                IMvcBuilder mvcBuilder = services.AddControllers();
+                services.AddSingleton<DynamicActionDescriptorChangeProvider>();
+                services.AddSingleton<IActionDescriptorChangeProvider>(s =>
+                    s.GetService<DynamicActionDescriptorChangeProvider>());
+            }
+            else if (ConfigOnce(appConfig, AppType.Gate))
+            {
+                services.AddMemoryCache();
             }
         }
     }

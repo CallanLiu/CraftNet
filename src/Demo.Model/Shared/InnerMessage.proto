@@ -6,10 +6,11 @@ option csharp_namespace = "Demo";
 
 message Login2G_GetTokenReq
 {
-  string Account = 1;
+  int32 AccountId = 1; // 账号Id
+  string Token = 2; // 令牌
 }
 
 message Login2G_GetTokenResp
 {
-  int64 Token = 1;
+  int32 Err = 1;
 }

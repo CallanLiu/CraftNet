@@ -13,6 +13,7 @@ public class Main
         IActorSystem actorSystem = app.GetSystem<IActorSystem>();
         if (app.IsFirstLoad)
         {
+            // 让每个app都成为一个actor
             actorSystem.CreateActor(app, true);
         }
 

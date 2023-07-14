@@ -14,6 +14,11 @@ public class LoginResp
     public string Token { get; set; }
 
     /// <summary>
+    /// 网关ip
+    /// </summary>
+    public string GateIp { get; set; }
+
+    /// <summary>
     /// 错误码
     /// </summary>
     public int Err { get; set; }

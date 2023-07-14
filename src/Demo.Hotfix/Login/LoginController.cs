@@ -1,12 +1,7 @@
-﻿using System.Buffers.Text;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using CraftNet;
 using CraftNet.Services;
 using Demo.DB;
-using Serilog;
 
 namespace Demo;
 
@@ -20,7 +15,6 @@ public class LoginController : ControllerBase
      */
     private readonly StartConfig   _startConfig;
     private readonly IActorService _actorService;
-    const            string        signKey = "^*)(&^#^&*";
 
     public LoginController(StartConfig startConfig, IActorService actorService)
     {
@@ -31,10 +25,7 @@ public class LoginController : ControllerBase
     [HttpGet(nameof(Test))]
     public string Test(string token)
     {
-        byte[]    bytes     = Convert.FromBase64String(token);
-        TokenInfo tokenInfo = JsonSerializer.Deserialize<TokenInfo>(bytes);
-        bool      b         = tokenInfo.Check(signKey);
-        return $"验证token结果: {b}";
+        return "hello";
     }
 
     /// <summary>
@@ -56,19 +47,24 @@ public class LoginController : ControllerBase
         var       gateList      = _startConfig.GetAppConfigs(AppType.Gate);
         AppConfig gateAppConfig = gateList.Rand();
 
+        // 生成一个token
+        string token = Guid.NewGuid().ToString("N");
+        Login2G_GetTokenResp login2GGetTokenResp = await _actorService.Call<Login2G_GetTokenResp>(gateAppConfig.ActorId,
+            new Login2G_GetTokenReq
+            {
+                AccountId = account.Id,
+                Token     = token
+            });
 
-        TokenInfo tokenInfo = new TokenInfo
+        if (login2GGetTokenResp.Err != 0)
         {
-            Id       = account.Id,
-            GateIp   = gateAppConfig.ProcessConfig.Urls,
-            ExpireAt = (int)(DateTime.Now.AddMinutes(5).Ticks / TimeSpan.TicksPerMinute)
-        };
+            loginResp.Err = login2GGetTokenResp.Err;
+        }
+        else
+        {
+            loginResp.Token = token;
+        }
 
-
-        tokenInfo.Sign(signKey);
-        string json = JsonSerializer.Serialize(tokenInfo);
-        loginResp.Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-        Log.Debug(json);
         return loginResp;
     }
 
