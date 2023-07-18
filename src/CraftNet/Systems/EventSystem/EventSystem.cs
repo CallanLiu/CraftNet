@@ -103,7 +103,7 @@ public class EventSystem : IEventSystem
         Log.Debug("注册事件监听器: {Name} EventId={EventId}", typeof(T).Name, eventId);
     }
 
-    public void RegisterCallback<T>() where T : ICallbackImpl<T>, new()
+    public void RegisterCallback<T>() where T : ICallbackImpl, new()
     {
         int id = T.Id;
         if (id > EventSystemComp.MaxCallbackTypes)

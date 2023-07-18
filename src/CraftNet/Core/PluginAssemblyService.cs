@@ -1,18 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Primitives;
+﻿using Microsoft.Extensions.FileProviders;
 
 namespace CraftNet;
-
-/// <summary>
-/// 插件程序集Builder
-/// </summary>
-public static class PluginAssemblyServiceBuilder
-{
-
-}
 
 public class PluginAssemblyService : IPluginAssemblyService
 {

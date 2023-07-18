@@ -7,9 +7,7 @@ namespace Demo;
 
 public class WebSocketService : WebSocketListener<DemoWsServerConnection>
 {
-    // 提前放入
-    public static readonly List<IApp> Apps   = new();
-    private static         int        _index = 0;
+    private static int _index = 0;
 
     private readonly IMessageDescCollection _messageDescCollection;
 
@@ -26,8 +24,9 @@ public class WebSocketService : WebSocketListener<DemoWsServerConnection>
 
     private static IApp GetNextApp()
     {
-        int  targetIndex = (Interlocked.Increment(ref _index) + 1) % Apps.Count;
-        IApp app         = Apps[targetIndex];
+        IReadOnlyList<IApp> gateApps    = AppList.Ins[AppType.Gate];
+        int                 targetIndex = (Interlocked.Increment(ref _index) + 1) % gateApps.Count;
+        IApp                app         = gateApps[targetIndex];
         return app;
     }
 

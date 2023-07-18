@@ -1,4 +1,4 @@
-﻿namespace Chuan
+﻿namespace CraftNet
 {
     public struct XRandom
     {

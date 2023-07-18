@@ -11,6 +11,8 @@ public class ProtoGenData : Stack<ProtoElement>
 
     public readonly List<ProtoElement> Elems = new();
 
+    public string Codes { get; set; }
+    
     public ProtoElement TryPeek()
     {
         if (this.Count == 0)

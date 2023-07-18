@@ -27,7 +27,7 @@ public interface IEventSystem : ISystemBase<IEventSystem>, ISystemTypeId
     /// 注册回调
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    void RegisterCallback<T>() where T : ICallbackImpl<T>, new();
+    void RegisterCallback<T>() where T : ICallbackImpl, new();
 
     /// <summary>
     /// 调用无返回值的回调

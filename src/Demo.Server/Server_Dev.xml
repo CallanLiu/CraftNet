@@ -8,7 +8,7 @@
         <!--   登录服:用来登录认证以及分配网关    -->
         <App Index="1" Name="登录" Type="Login"/>
 
-        <!--   使用两个Gate进行负载客户端连接,并处理大厅相关逻辑。    -->
+        <!--   使用两个Gate进行负载客户端连接    -->
         <App Index="101" Name="网关1" Type="Gate"/>
         <App Index="102" Name="网关2" Type="Gate"/>
 

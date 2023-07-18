@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using CraftNet;
 using CraftNet.Services;
+using Demo.Services.Network;
 
 namespace Demo;
 
@@ -16,6 +17,8 @@ public static class Startup
     public static void ConfigureBuilder(this WebApplicationBuilder builder, StartConfig startConfig)
     {
         IServiceCollection services = builder.Services;
+        services.AddSingleton<IMessageSerializerProvider, ProtoMessageSerializerProvider>();
+
         builder.WebHost.UseKestrel(options => { Bind(options, startConfig); });
 
         HashSet<AppType> configured = new HashSet<AppType>();

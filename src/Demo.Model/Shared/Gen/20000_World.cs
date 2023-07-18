@@ -2,4 +2,7 @@ using ProtoBuf;
 using CraftNet.Services;
 
 
-namespace Demo;
+namespace Demo
+{
+        
+}

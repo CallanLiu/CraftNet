@@ -4,4 +4,7 @@ using CraftNet.Services;
 using {{ item }};
 {{- end }}
 
-namespace {{namespace}};
+namespace {{namespace}}
+{
+    {{codes}}    
+}

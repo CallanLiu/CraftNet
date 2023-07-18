@@ -14,7 +14,6 @@ public class PluginAssemblyContext : IPluginAssemblyContext
 {
     public string Name { get; }
 
-    public Assembly ModelAssembly { get; private set; }
     public Assembly HotfixAssembly { get; private set; }
 
     private Action<App> _onLoad;
@@ -25,7 +24,7 @@ public class PluginAssemblyContext : IPluginAssemblyContext
 
     private readonly PhysicalFileProvider _physicalFileProvider;
 
-    private uint                    lastChangeTime;
+    private uint                    _lastChangeTime;
     private CancellationTokenSource _cts;
 
     private string HotfixDllName => $"{Name}.Hotfix.dll";
@@ -72,9 +71,9 @@ public class PluginAssemblyContext : IPluginAssemblyContext
 
             uint nowSeconds = (uint)(Stopwatch.GetTimestamp() / TimeSpan.TicksPerSecond);
             Console.WriteLine($"热更新程序集变动: {this.Name} 线程Id={Thread.CurrentThread.ManagedThreadId} {nowSeconds}");
-            if (lastChangeTime != nowSeconds)
+            if (_lastChangeTime != nowSeconds)
             {
-                lastChangeTime = (uint)(Stopwatch.GetTimestamp() / TimeSpan.TicksPerSecond);
+                _lastChangeTime = (uint)(Stopwatch.GetTimestamp() / TimeSpan.TicksPerSecond);
 
                 await Task.Delay(5000);
                 LoadHotfix();

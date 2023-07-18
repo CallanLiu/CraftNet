@@ -19,12 +19,16 @@ public interface ICallback<TResult>
 {
 }
 
+public interface ICallbackImpl
+{
+    static abstract int Id { get; }
+}
+
 /// <summary>
 /// 回调实现
 /// </summary>
-public interface ICallbackImpl<T>
+public interface ICallbackImpl<T> : ICallbackImpl
 {
-    static abstract int Id { get; }
     void On(object target, in T e);
 }
 

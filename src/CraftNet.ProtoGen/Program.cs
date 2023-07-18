@@ -52,7 +52,11 @@ public class Program
         string fileExt = options.Tpl.Split('_')[^1];
         if (File.Exists(options.Input))
         {
-            options.OutputPath = Path.Combine(Path.GetDirectoryName(options.Input), "Gen");
+            if (string.IsNullOrEmpty(options.OutputPath))
+            {
+                options.OutputPath = Path.Combine(Path.GetDirectoryName(options.Input), "Gen");
+            }
+
             if (!Directory.Exists(options.OutputPath))
             {
                 Directory.CreateDirectory(options.OutputPath);
@@ -85,8 +89,7 @@ public class Program
             string protoTxt = File.ReadAllText(file);
             var    data     = Proto2CS.Gen(protoTxt);
 
-            // 先生成头
-            stringBuilder.AppendLine(headTpl.Render(data));
+
             ushort opcode = 0;
             foreach (var e in data.Elems)
             {
@@ -128,9 +131,12 @@ public class Program
                 }
             }
 
+            data.Codes = stringBuilder.ToString();
+            string finalCodes = headTpl.Render(data);
+
             string fileName       = Path.GetFileNameWithoutExtension(file);
             string outputFileName = Path.Combine(options.OutputPath, $"{fileName}.{fileExt}");
-            File.WriteAllText(outputFileName, stringBuilder.ToString());
+            File.WriteAllText(outputFileName, finalCodes);
             Console.WriteLine($"输出: {outputFileName}");
         }
     }

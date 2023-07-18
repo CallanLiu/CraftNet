@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Chuan;
+using CraftNet;
 using Demo.Entities;
 using CraftNet.Services;
 

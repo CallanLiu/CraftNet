@@ -1,4 +1,5 @@
 ﻿using CraftNet;
+using Demo.Events;
 
 namespace Demo;
 
@@ -15,5 +16,8 @@ public class GateSystem : IGateSystem
         actorSystem.RegisterFilter<SessionMessageFilter>();
         actorSystem.RegisterHandler<PingHandler>();
         actorSystem.RegisterHandler<Login2G_GetTokenHandler>();
+
+        IEventSystem eventSystem = _app.GetSystem<IEventSystem>();
+        eventSystem.RegisterCallback<NetworkConnectedFuncImpl>();
     }
 }

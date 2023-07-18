@@ -14,40 +14,40 @@ public class QueueTaskScheduler : TaskScheduler, IThreadPoolWorkItem
         Running  = 2
     }
 
-    private            Queue<Task> workItems = new();
-    private readonly   object      syncObj   = new();
-    private            Status      state;
-    protected readonly App         context;
+    private readonly   Queue<Task> _workItems = new();
+    private readonly   object      _syncObj   = new();
+    private            Status      _state;
+    protected readonly App         Context;
 
     public QueueTaskScheduler(App context)
     {
-        this.context = context;
+        this.Context = context;
     }
 
     protected override IEnumerable<Task> GetScheduledTasks()
     {
-        return workItems;
+        return _workItems;
     }
 
     private void RunTask(Task task)
     {
-        RuntimeContext.Set(context);
+        RuntimeContext.Set(Context);
         bool done = TryExecuteTask(task);
         if (!done)
-            throw new Exception($"task done false: {context}");
+            throw new Exception($"task done false: {Context}");
 
         RuntimeContext.Reset();
     }
 
     public void EnqueueTask(Task task)
     {
-        lock (syncObj)
+        lock (_syncObj)
         {
-            workItems.Enqueue(task);
-            if (state != Status.Waiting)
+            _workItems.Enqueue(task);
+            if (_state != Status.Waiting)
                 return;
 
-            state = Status.Runnable;
+            _state = Status.Runnable;
             ScheduleExecution(this);
         }
     }
@@ -63,7 +63,7 @@ public class QueueTaskScheduler : TaskScheduler, IThreadPoolWorkItem
     protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
     {
         var  currentContext   = RuntimeContext.Current;
-        bool canExecuteInline = currentContext != null && object.Equals(currentContext, context);
+        bool canExecuteInline = currentContext != null && object.Equals(currentContext, Context);
         if (!canExecuteInline)
             return false;
 
@@ -83,14 +83,14 @@ public class QueueTaskScheduler : TaskScheduler, IThreadPoolWorkItem
         {
             do
             {
-                lock (syncObj)
-                    state = Status.Running;
+                lock (_syncObj)
+                    _state = Status.Running;
 
                 Task task;
-                lock (syncObj)
+                lock (_syncObj)
                 {
-                    if (workItems.Count > 0)
-                        task = workItems.Dequeue();
+                    if (_workItems.Count > 0)
+                        task = _workItems.Dequeue();
                     else
                         break;
                 }
@@ -100,16 +100,16 @@ public class QueueTaskScheduler : TaskScheduler, IThreadPoolWorkItem
         }
         finally
         {
-            lock (syncObj)
+            lock (_syncObj)
             {
-                if (workItems.Count > 0)
+                if (_workItems.Count > 0)
                 {
-                    state = Status.Runnable;
+                    _state = Status.Runnable;
                     ScheduleExecution(this);
                 }
                 else
                 {
-                    state = Status.Waiting;
+                    _state = Status.Waiting;
                 }
             }
         }

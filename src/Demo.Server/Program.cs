@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProtoBuf.Meta;
 using Serilog;
 using Serilog.Events;
 using Tomlyn.Extensions.Configuration;

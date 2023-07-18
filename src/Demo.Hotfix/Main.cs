@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using CraftNet;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Demo;
 

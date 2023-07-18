@@ -1,6 +1,6 @@
 ﻿using System.IO.Pipelines;
 using System.Net.WebSockets;
-using Chuan;
+using CraftNet;
 using CraftNet.Services;
 
 namespace Demo.Network;

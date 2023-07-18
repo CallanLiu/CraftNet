@@ -5,8 +5,8 @@
 /// </summary>
 public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
 {
-    private SingleWaiterAutoResetEvent workSignal = new();
-    private Queue<WorkItem>            works      = new();
+    private readonly SingleWaiterAutoResetEvent _workSignal = new();
+    private readonly Queue<WorkItem>            _works      = new();
 
     record struct WorkItem
     {
@@ -62,8 +62,8 @@ public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
     {
         lock (this)
         {
-            works.Enqueue(new WorkItem(workItem));
-            workSignal.Signal();
+            _works.Enqueue(new WorkItem(workItem));
+            _workSignal.Signal();
         }
     }
 
@@ -71,8 +71,8 @@ public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
     {
         lock (this)
         {
-            works.Enqueue(new WorkItem(workItem, state));
-            workSignal.Signal();
+            _works.Enqueue(new WorkItem(workItem, state));
+            _workSignal.Signal();
         }
     }
 
@@ -80,8 +80,8 @@ public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
     {
         lock (this)
         {
-            works.Enqueue(new WorkItem(workItem));
-            workSignal.Signal();
+            _works.Enqueue(new WorkItem(workItem));
+            _workSignal.Signal();
         }
     }
 
@@ -98,12 +98,12 @@ public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
     {
         while (true)
         {
-            WorkItem workItem;
             do
             {
+                WorkItem workItem;
                 lock (this)
                 {
-                    if (!works.TryDequeue(out workItem))
+                    if (!_works.TryDequeue(out workItem))
                         break;
                 }
 
@@ -118,7 +118,7 @@ public class SingleThreadScheduler : QueueTaskScheduler, IScheduler
                 }
             } while (true);
 
-            await workSignal.WaitAsync();
+            await _workSignal.WaitAsync();
         }
     }
 }
