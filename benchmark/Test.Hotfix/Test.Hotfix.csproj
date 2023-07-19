@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CraftNet\CraftNet.csproj" />
       <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
     </ItemGroup>
 

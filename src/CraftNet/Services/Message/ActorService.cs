@@ -65,7 +65,7 @@ public class ActorService : IActorService, IRpcReply
     }
 
 
-    public void Post(ActorId id, byte type, ushort opcode, uint rpcId, IMessageBase body,
+    public void Post(ActorId id, MessageType type, ushort opcode, uint rpcId, IMessageBase body,
         IResponseCompletionSource<IResponse> tcs, int extra = 0)
     {
         ActorMessage message = new ActorMessage(type, id, opcode, body, rpcId, tcs, extra);

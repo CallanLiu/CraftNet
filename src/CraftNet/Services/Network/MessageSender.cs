@@ -32,23 +32,23 @@ public class MessageSender : IMessageSender
     private readonly Action<object>                    _responseExecCallback;
     private readonly Action<object>                    _sendExecCallback;
     private readonly Queue<ActorMessage>               _queue;
-    private readonly IMessageSerializer                _messageSerializer;
+    private readonly IMessageDescCollection            _messageDescCollection;
     private readonly Dictionary<uint, RpcCallbackItem> _callbacks;
     private readonly Queue<(uint, long)>               _timeoutQueue;
 
     public MessageSender(ushort localPId, ushort pid, IPEndPoint endpoint, IServiceProvider services)
     {
-        _localPId             = localPId;
-        this.PId              = pid;
-        RemoteEntPoint        = endpoint;
-        _vThread              = new VThread();
-        _sendExecCallback     = SendExecCallback;
-        _responseExecCallback = ResponseExecCallback;
-        _queue                = new Queue<ActorMessage>();
-        _callbacks            = new();
-        _onTimerCallback      = OnTimeout;
-        _connectionFactory    = services.GetService<IConnectionFactory>();
-        _messageSerializer    = services.GetService<IMessageSerializer>();
+        _localPId              = localPId;
+        this.PId               = pid;
+        RemoteEntPoint         = endpoint;
+        _vThread               = new VThread();
+        _sendExecCallback      = SendExecCallback;
+        _responseExecCallback  = ResponseExecCallback;
+        _queue                 = new Queue<ActorMessage>();
+        _callbacks             = new();
+        _onTimerCallback       = OnTimeout;
+        _connectionFactory     = services.GetService<IConnectionFactory>();
+        _messageDescCollection = services.GetService<IMessageDescCollection>();
 
         _timeoutQueue = new Queue<(uint, long)>();
         ITimerService timerService = services.GetService<ITimerService>();
@@ -98,7 +98,15 @@ public class MessageSender : IMessageSender
         {
             var (tcs, _) = result;
             _callbacks.Remove(message.RpcId);
-            tcs.Complete((IResponse)message.Body);
+
+            if (message.Body is ExceptionResponse e)
+            {
+                tcs.SetException(new Exception(e.Ex));
+            }
+            else
+            {
+                tcs.Complete((IResponse)message.Body);
+            }
         }
     }
 
@@ -108,14 +116,23 @@ public class MessageSender : IMessageSender
         var output = this._connectionContext.Transport.Output;
         while (_queue.TryDequeue(out ActorMessage message))
         {
+            if (!_messageDescCollection.TryGet(message.Opcode, out MessageDesc messageDesc))
+            {
+                OnResponse(
+                    new ActorMessage(MessageType.ExceptionResponse, 0, 0, new ExceptionResponse("消息描述不存在,无法发送:"),
+                        message.RpcId));
+                return;
+            }
+
+
             // 反转为当前pid
             ActorId    inverseActorId = new ActorId(_localPId, message.ActorId.Index);
             Span<byte> headSpan       = MessageHeaderHelper.WriteHead(message, output, inverseActorId);
 
-            _messageSerializer.Serialize(message.Body, output);
+            messageDesc.Serializer.Serialize(message.Body, output);
 
             // 写入长度字段
-            BinaryPrimitives.WriteInt32BigEndian(headSpan, (int)(output.UnflushedBytes - 4));
+            BinaryPrimitives.WriteUInt32LittleEndian(headSpan, (uint)(output.UnflushedBytes - 4));
             _ = output.FlushAsync();
         }
     }

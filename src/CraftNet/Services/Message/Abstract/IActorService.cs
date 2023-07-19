@@ -26,6 +26,21 @@ public interface IResponse : IMessageBase
 }
 
 /// <summary>
+/// 异常响应
+/// </summary>
+public sealed class ExceptionResponse : IResponse
+{
+    public ushort GetOpcode() => 0;
+
+    public readonly string Ex;
+
+    public ExceptionResponse(string ex)
+    {
+        this.Ex = ex;
+    }
+}
+
+/// <summary>
 /// 消息服务
 /// </summary>
 public interface IActorService
@@ -33,7 +48,7 @@ public interface IActorService
     /// <summary>
     /// 投递一个消息(远程/本地)
     /// </summary>
-    void Post(ActorId id, byte type, ushort opcode, uint rpcId, IMessageBase body,
+    void Post(ActorId id, MessageType type, ushort opcode, uint rpcId, IMessageBase body,
         IResponseCompletionSource<IResponse> tcs = null, int extra = 0);
 
     /// <summary>

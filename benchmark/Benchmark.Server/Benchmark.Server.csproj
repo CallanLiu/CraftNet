@@ -11,7 +11,6 @@
 
 
     <ItemGroup>
-        <ProjectReference Include="..\CraftNet\CraftNet.csproj" />
 
         <!--    运行时不引用此程序集，构建需要输出    -->
         <ProjectReference Include="..\Test.Hotfix\Test.Hotfix.csproj" OutputItemType="Analyzer" />

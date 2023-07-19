@@ -4,16 +4,19 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <RootNamespace>Demo</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CraftNet\CraftNet.csproj" />
+        <AdditionalFiles Include="Shared\10000_Gate.proto" />
+        <AdditionalFiles Include="Shared\20000_World.proto" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="protobuf-net" Version="3.2.26" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\CraftNet\CraftNet.csproj" />
+    </ItemGroup>
 </Project>

@@ -31,21 +31,21 @@ internal static class MessageHeaderHelper
         Span<byte> headSpan = output.GetSpan(size);
 
         int pos = 0;
-        BinaryPrimitives.WriteInt32BigEndian(headSpan, 0); // len 占位
+        BinaryPrimitives.WriteUInt32LittleEndian(headSpan, 0); // len 占位
         pos += 4;
 
-        BinaryPrimitives.WriteUInt64BigEndian(headSpan[pos..], actorId);
+        BinaryPrimitives.WriteUInt64LittleEndian(headSpan[pos..], actorId);
         pos += 8;
 
-        headSpan[pos] =  message.Type;
+        headSpan[pos] =  (byte)message.Type;
         pos           += 1;
 
-        BinaryPrimitives.WriteUInt16BigEndian(headSpan[pos..], message.Opcode);
+        BinaryPrimitives.WriteUInt16LittleEndian(headSpan[pos..], message.Opcode);
         pos += 2;
 
         if (message.Type is MessageType.Request or MessageType.Response)
         {
-            BinaryPrimitives.WriteUInt32BigEndian(headSpan[pos..], message.RpcId);
+            BinaryPrimitives.WriteUInt32LittleEndian(headSpan[pos..], message.RpcId);
             pos += 4;
         }
 

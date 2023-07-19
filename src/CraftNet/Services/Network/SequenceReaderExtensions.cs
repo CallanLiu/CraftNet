@@ -38,4 +38,11 @@ public static class SequenceReaderExtensions
         value = (uint)temp;
         return b;
     }
+    
+    public static bool TryReadLittleEndian(this ref SequenceReader<byte> reader, out ulong value)
+    {
+        bool b = reader.TryReadLittleEndian(out long temp);
+        value = (uint)temp;
+        return b;
+    }
 }

@@ -99,13 +99,16 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
         buffer = buffer.Slice(length + 4);
 
         // 头
-        reader.TryReadBigEndian(out ulong actorId);
-        reader.TryRead(out byte type);
-        reader.TryReadBigEndian(out ushort opcode);
-        uint rpcId = 0;
-        if (type is MessageType.Request or MessageType.Response)
+        reader.TryReadLittleEndian(out ulong actorId);
+        reader.TryRead(out byte tmpType);
+        reader.TryReadLittleEndian(out ushort opcode);
+
+        MessageType type  = (MessageType)tmpType;
+        uint        rpcId = 0;
+
+        if (type.HasRpcField())
         {
-            reader.TryReadBigEndian(out uint tmpRpcId);
+            reader.TryReadLittleEndian(out uint tmpRpcId);
             rpcId = tmpRpcId;
         }
 

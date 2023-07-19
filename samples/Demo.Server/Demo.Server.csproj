@@ -28,6 +28,5 @@
     <ItemGroup>
       <ProjectReference Include="..\Demo.Hotfix\Demo.Hotfix.csproj" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\Demo.Model\Demo.Model.csproj" />
-      <ProjectReference Include="..\CraftNet.ProtoGen\CraftNet.ProtoGen.csproj" />
     </ItemGroup>
 </Project>

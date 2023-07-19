@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark.Server", "src\Benchmark.Server\Benchmark.Server.csproj", "{786F95BC-1E40-4A27-89F3-BBA11B0E9FE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark.Server", "benchmark\Benchmark.Server\Benchmark.Server.csproj", "{786F95BC-1E40-4A27-89F3-BBA11B0E9FE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Hotfix", "src\Test.Hotfix\Test.Hotfix.csproj", "{103B78FE-9AF7-459F-88E9-979D1D2B66FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Hotfix", "benchmark\Test.Hotfix\Test.Hotfix.csproj", "{103B78FE-9AF7-459F-88E9-979D1D2B66FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraftNet", "src\CraftNet\CraftNet.csproj", "{9975BD5E-D062-4432-852E-9F94C361CEE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Model", "src\Test.Model\Test.Model.csproj", "{866811F9-ED1E-417A-8A22-F40489AB1A75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Model", "benchmark\Test.Model\Test.Model.csproj", "{866811F9-ED1E-417A-8A22-F40489AB1A75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark.Client", "src\Benchmark.Client\Benchmark.Client.csproj", "{2541F617-AAD0-46B3-8E0C-BF7846851962}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark.Client", "benchmark\Benchmark.Client\Benchmark.Client.csproj", "{2541F617-AAD0-46B3-8E0C-BF7846851962}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Server", "src\Demo.Server\Demo.Server.csproj", "{125A472A-FC63-4D21-A66A-F3228DF885BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Server", "samples\Demo.Server\Demo.Server.csproj", "{125A472A-FC63-4D21-A66A-F3228DF885BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmark", "Benchmark", "{BE4128B1-4E33-4CCC-A721-090AB8C0F659}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{FFCE727C-FFE3-4F85-BCD9-6142E4CDD5B3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{FFCE727C-FFE3-4F85-BCD9-6142E4CDD5B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Model", "src\Demo.Model\Demo.Model.csproj", "{9928DD0D-8319-4983-8FED-1CB93F7D7F14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Model", "samples\Demo.Model\Demo.Model.csproj", "{9928DD0D-8319-4983-8FED-1CB93F7D7F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Hotfix", "src\Demo.Hotfix\Demo.Hotfix.csproj", "{C9C109FF-6611-4439-A169-B43D7FF22A9C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Hotfix", "samples\Demo.Hotfix\Demo.Hotfix.csproj", "{C9C109FF-6611-4439-A169-B43D7FF22A9C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraftNet.ProtoGen", "src\CraftNet.ProtoGen\CraftNet.ProtoGen.csproj", "{B37F10D1-E04D-4B3A-B3D9-05AB4754ABA1}"
 EndProject

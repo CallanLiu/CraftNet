@@ -1,8 +1,17 @@
 ﻿namespace CraftNet.Services;
 
-public static class MessageType
+public enum MessageType : byte
 {
-    public const byte Message  = 1;
-    public const byte Request  = 1 << 1;
-    public const byte Response = 1 << 2;
+    Message           = 1,
+    Request           = 1 << 1,
+    Response          = 1 << 2,
+    ExceptionResponse = Response | 1 << 3 // 异常响应
+}
+
+public static class MessageTypeExtensions
+{
+    public static bool HasRpcField(this MessageType self)
+    {
+        return self is MessageType.Request or MessageType.Response or MessageType.ExceptionResponse;
+    }
 }

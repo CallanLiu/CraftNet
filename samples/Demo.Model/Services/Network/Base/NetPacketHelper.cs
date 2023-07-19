@@ -19,12 +19,13 @@ public static class NetPacketHelper
         SequenceReader<byte> reader = new SequenceReader<byte>(buffer);
 
         // 消息类型
-        reader.TryRead(out byte msgType);
+        reader.TryRead(out byte tmpMsgType);
         reader.TryReadLittleEndian(out short tmp);
         // packet.Opcode = (ushort)(tmp ^ random.RandomInt());
         packet.Opcode = (ushort)tmp;
 
-        if (msgType is MessageType.Request or MessageType.Response) // 没用rpcId
+        MessageType msgType = (MessageType)tmpMsgType;
+        if (msgType.HasRpcField()) // 没用rpcId
         {
             reader.TryReadLittleEndian(out uint tmpInt);
             packet.RpcId = tmpInt;
@@ -57,7 +58,7 @@ public static class NetPacketHelper
         {
             // 写入头: type[1]+opcode[2]
             Memory<byte> buffer = output.GetMemory(3);
-            buffer.Span[0] = MessageType.Message;
+            buffer.Span[0] = (byte)MessageType.Message;
             BinaryPrimitives.WriteUInt16LittleEndian(buffer.Span[1..], op);
             output.Advance(3);
         }
@@ -65,7 +66,7 @@ public static class NetPacketHelper
         {
             // 写入头: type[1]+opcode[2]+rpcId[4]
             Memory<byte> buffer = output.GetMemory(7);
-            buffer.Span[0] = MessageType.Response;
+            buffer.Span[0] = (byte)MessageType.Response;
             BinaryPrimitives.WriteUInt16LittleEndian(buffer.Span.Slice(1, 2), op);
             BinaryPrimitives.WriteUInt32LittleEndian(buffer.Span.Slice(3, 4), packet.RpcId.Value);
             output.Advance(7);

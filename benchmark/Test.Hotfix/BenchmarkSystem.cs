@@ -37,6 +37,22 @@ public class BenchmarkSystem : IBenchmarkSystem
         if (app.Id.PId == 2) // client
         {
             BenchmarkTest();
+
+            // TestCall();
+        }
+    }
+
+    private async void TestCall()
+    {
+        try
+        {
+            AppId        srvId       = new AppId(1, 0);
+            IActorSystem actorSystem = _app.GetSystem<IActorSystem>();
+            IResponse    response    = await actorSystem.Call(srvId, new PingAppReq());
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "");
         }
     }
 
@@ -64,10 +80,10 @@ public class BenchmarkSystem : IBenchmarkSystem
     private async Task OneClientBenchmarkTest()
     {
         // 指定测试服的id
-        AppId                   srvId         = new AppId(1, 0);
-        IActorSystem          actorSystem = _app.GetSystem<IActorSystem>();
-        Stopwatch               stopwatch     = _comp.Stopwatch;
-        CancellationTokenSource cts           = _comp.CancellationTokenSource;
+        AppId                   srvId       = new AppId(1, 0);
+        IActorSystem            actorSystem = _app.GetSystem<IActorSystem>();
+        Stopwatch               stopwatch   = _comp.Stopwatch;
+        CancellationTokenSource cts         = _comp.CancellationTokenSource;
         while (cts.IsCancellationRequested == false)
         {
             IResponse response = await actorSystem.Call(srvId, new PingAppReq());

@@ -12,12 +12,12 @@ public record struct NetPacket
     //     this.Body    = Body;
     // }
 
-    public byte MsgType { get; set; }
+    public MessageType MsgType { get; set; }
     public ushort Opcode { get; set; }
     public uint RpcId { get; set; }
     public IMessageBase Body { get; set; }
 
-    public void Deconstruct(out byte msgType, out ushort opcode, out uint rpcId, out IMessageBase body)
+    public void Deconstruct(out MessageType msgType, out ushort opcode, out uint rpcId, out IMessageBase body)
     {
         msgType = this.MsgType;
         opcode  = this.Opcode;

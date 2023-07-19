@@ -5,7 +5,7 @@ namespace CraftNet.Services;
 /// </summary>
 public class ActorMessage
 {
-    public byte Type { get; }
+    public MessageType Type { get; }
 
     /// <summary>
     /// 目标ActorId
@@ -33,7 +33,7 @@ public class ActorMessage
     /// </summary>
     internal bool IsFromPool { get; set; } = false;
 
-    public ActorMessage(byte type, ActorId actorId, ushort opcode, IMessageBase body, uint rpcId,
+    public ActorMessage(MessageType type, ActorId actorId, ushort opcode, IMessageBase body, uint rpcId,
         IResponseCompletionSource<IResponse> tcs = null, int extra = 0)
     {
         this.Type    = type;
