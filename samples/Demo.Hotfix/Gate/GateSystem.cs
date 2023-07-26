@@ -16,6 +16,7 @@ public class GateSystem : IGateSystem
         actorSystem.RegisterFilter<SessionMessageFilter>();
         actorSystem.RegisterHandler<PingHandler>();
         actorSystem.RegisterHandler<Login2G_GetTokenHandler>();
+        actorSystem.RegisterHandler<C2G_LoginGateHandler>();
 
         IEventSystem eventSystem = _app.GetSystem<IEventSystem>();
         eventSystem.RegisterCallback<NetworkConnectedFuncImpl>();

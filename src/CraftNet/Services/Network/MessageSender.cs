@@ -1,7 +1,11 @@
-﻿using System.Buffers.Binary;
+﻿using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
+using System.Runtime.CompilerServices;
 using CraftNet.Services;
+using MemoryPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -99,9 +103,9 @@ public class MessageSender : IMessageSender
             var (tcs, _) = result;
             _callbacks.Remove(message.RpcId);
 
-            if (message.Body is ExceptionResponse e)
+            if (message.Opcode is 0 && message.Body is ExceptionResponse exceptionResponse)
             {
-                tcs.SetException(new Exception(e.Ex));
+                tcs.SetException(exceptionResponse);
             }
             else
             {
@@ -119,21 +123,39 @@ public class MessageSender : IMessageSender
             if (!_messageDescCollection.TryGet(message.Opcode, out MessageDesc messageDesc))
             {
                 OnResponse(
-                    new ActorMessage(MessageType.ExceptionResponse, 0, 0, new ExceptionResponse("消息描述不存在,无法发送:"),
+                    new ActorMessage(MessageType.Response, 0, 0, new ExceptionResponse("消息描述不存在,无法发送:"),
                         message.RpcId));
                 return;
             }
 
-
             // 反转为当前pid
-            ActorId    inverseActorId = new ActorId(_localPId, message.ActorId.Index);
-            Span<byte> headSpan       = MessageHeaderHelper.WriteHead(message, output, inverseActorId);
+            ActorId inverseActorId = new ActorId(_localPId, message.ActorId.Index);
 
+            // 预留长度字段
+            Span<byte> headSpan = output.GetSpan(4);
+            output.Advance(4);
+
+            // 写入header
+            WriteUnmanaged(output, inverseActorId.Value);
+            WriteUnmanaged(output, message.Type);
+            WriteUnmanaged(output, message.Opcode);
+            if (message.Type.HasRpcField())
+                WriteUnmanaged(output, message.RpcId);
+
+            // 写入body
             messageDesc.Serializer.Serialize(message.Body, output);
 
             // 写入长度字段
             BinaryPrimitives.WriteUInt32LittleEndian(headSpan, (uint)(output.UnflushedBytes - 4));
             _ = output.FlushAsync();
+        }
+
+        static void WriteUnmanaged<T1>(IBufferWriter<byte> writer, scoped in T1 v1) where T1 : unmanaged
+        {
+            int        num  = Unsafe.SizeOf<T1>();
+            Span<byte> span = writer.GetSpan(num);
+            Unsafe.WriteUnaligned(ref span[0], v1);
+            writer.Advance(num);
         }
     }
 

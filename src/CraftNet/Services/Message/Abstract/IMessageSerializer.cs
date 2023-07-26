@@ -12,3 +12,11 @@ public interface IMessageSerializer
 
     void Serialize(object obj, PipeWriter pipeWriter);
 }
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public abstract class MessageSerializerAttribute : Attribute, IMessageSerializer
+{
+    public abstract object Deserialize(Type type, ReadOnlySequence<byte> buffer);
+
+    public abstract void Serialize(object obj, PipeWriter pipeWriter);
+}

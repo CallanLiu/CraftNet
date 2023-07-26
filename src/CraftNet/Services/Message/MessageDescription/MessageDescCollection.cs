@@ -49,10 +49,24 @@ public sealed class MessageDescCollection : IMessageDescCollection
     /// <param name="opcode"></param>
     public void Add(Type type, ushort opcode)
     {
-        IMessageSerializer messageSerializer = _messageSerializerProvider.Get(type, opcode);
-        MessageDesc        messageDesc       = new MessageDesc(opcode, type, messageSerializer);
+        IMessageSerializer messageSerializer = type.GetCustomAttribute<MessageSerializerAttribute>() ??
+                                               _messageSerializerProvider.Get(type, opcode);
+        MessageDesc messageDesc = new MessageDesc(opcode, type, messageSerializer);
         _types.Add(opcode, messageDesc);
         _typeToIdMap.Add(type, messageDesc);
+    }
+
+    /// <summary> 
+    /// 添加类型并指定序列化器
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="opcode"></param>
+    /// <param name="messageSerializer"></param>
+    public void Add(Type type, ushort opcode, IMessageSerializer messageSerializer)
+    {
+        MessageDesc messageDesc = new MessageDesc(opcode, type, messageSerializer);
+        _types[opcode]     = messageDesc;
+        _typeToIdMap[type] = messageDesc;
     }
 
     /// <summary>

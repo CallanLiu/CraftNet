@@ -54,7 +54,7 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
             {
                 while (TryParse(_messageDescCollection, ref buffer, out ActorMessage message))
                 {
-                    if (message.Type is MessageType.Response)
+                    if (message.Type.HasResponse())
                     {
                         if (_senderManager.TryGet(message.ActorId.PId, out var sender))
                         {
@@ -63,7 +63,7 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
                     }
                     else
                     {
-                        if (message.Type is MessageType.Request)
+                        if (message.Type.HasRequest())
                             message.RpcReply = this;
                         ActorMailbox mailbox = _actorService.GetMailbox(message.ActorId);
                         mailbox.Enqueue(message);
@@ -96,16 +96,15 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
         if (!LengthFieldBasedFrameDecoder.TryParse(ref buffer, out uint length, out SequenceReader<byte> reader))
             return false;
 
+        // 直接切割到这个消息的结束位置
         buffer = buffer.Slice(length + 4);
 
         // 头
         reader.TryReadLittleEndian(out ulong actorId);
         reader.TryRead(out byte tmpType);
+        MessageType type = (MessageType)tmpType;
         reader.TryReadLittleEndian(out ushort opcode);
-
-        MessageType type  = (MessageType)tmpType;
-        uint        rpcId = 0;
-
+        uint rpcId = 0;
         if (type.HasRpcField())
         {
             reader.TryReadLittleEndian(out uint tmpRpcId);

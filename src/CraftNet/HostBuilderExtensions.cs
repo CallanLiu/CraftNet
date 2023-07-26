@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using CraftNet.Services;
+using MemoryPack;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +48,7 @@ public static class HostBuilderExtensions
             services.TryAddSingleton<ITimerService, TimerWheel>();
             services.AddSocketConnectionFactory();
         });
+
 
         if (serverBuilder.EndPoint is not null)
         {

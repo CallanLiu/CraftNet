@@ -53,7 +53,7 @@ public class SessionMessageFilter : MessageFilter<Session>
         if (actorMessage.Extra == 1) // Extra=1客户端发上来的消息
         {
             // Agent自己处理
-            if (_set.Contains(actorMessage.Opcode))
+            if (actorMessage.Opcode < 20000) // 都是网关处理的消息
             {
                 object result = await context.Invoke();
                 if (actorMessage.Type is MessageType.Request)

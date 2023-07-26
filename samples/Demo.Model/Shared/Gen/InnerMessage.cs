@@ -18,7 +18,7 @@ namespace Demo
         /// 令牌
         /// </summary>
         [MemoryPackOrder(2)] public string Token { get; set; }
-            
+        
     }
     
     [MemoryPackable]

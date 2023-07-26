@@ -16,7 +16,7 @@ public class Login2G_GetTokenHandler : RequestHandler<App, Login2G_GetTokenReq, 
 
     protected override ValueTask On(App self, Login2G_GetTokenReq req, Reply reply)
     {
-        Log.Debug("[Login] 添加登录Token: {AccountId}, {Token}", req.AccountId, req.Token);
+        Log.Debug("[gate] 添加登录Token: {AccountId}, {Token}", req.AccountId, req.Token);
         _memoryCache.Set(req.Token, req.AccountId, TimeSpan.FromMinutes(1));
         reply.Invoke(new Login2G_GetTokenResp());
         return ValueTask.CompletedTask;

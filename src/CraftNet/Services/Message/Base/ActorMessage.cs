@@ -5,18 +5,16 @@ namespace CraftNet.Services;
 /// </summary>
 public class ActorMessage
 {
-    public MessageType Type { get; }
-
     /// <summary>
     /// 目标ActorId
     /// </summary>
     public ActorId ActorId { get; }
 
+    public MessageType Type { get; }
     public ushort Opcode { get; }
+    public uint RpcId { get; }
 
     public IMessageBase Body { get; }
-
-    public uint RpcId { get; }
 
     public int Extra { get; }
 
