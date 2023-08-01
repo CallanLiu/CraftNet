@@ -2,6 +2,9 @@
 
 <!-- 定义一组服务器，内部将可相互连接 -->
 <Server Name="服务端示例">
+
+    <Property Name="game_db" Value="mongodb://127.0.0.1:27017/game_db"/>
+
     <!-- 定义一个启动进程的配置: EndPoint内网IP地址,Urls对外需要监听的协议断开(http与ws是一起的，监听http即可。)   -->
     <Process Id="1" EndPoint="127.0.0.1:20001" Urls="http://127.0.0.1:11000">
 
@@ -9,13 +12,13 @@
         <App Index="1" Name="登录" Type="Login"/>
 
         <!--   使用两个Gate进行负载客户端连接    -->
-        <App Index="101" Name="网关1" Type="Gate"/>
-        <App Index="102" Name="网关2" Type="Gate"/>
+        <App Index="2" Name="网关1" Type="Gate"/>
+        <App Index="3" Name="网关2" Type="Gate"/>
 
         <!--   游戏服:用来承载具体的游戏逻辑    -->
-        <App Index="201" Name="游戏" Type="Game"/>
+        <App Index="4" Name="游戏" Type="Game"/>
 
         <!--   世界服:协调     -->
-        <App Index="300" Name="世界服" Type="World"/>
+        <App Index="5" Name="世界服" Type="World"/>
     </Process>
 </Server>

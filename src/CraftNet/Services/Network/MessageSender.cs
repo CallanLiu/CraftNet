@@ -31,6 +31,7 @@ public class MessageSender : IMessageSender
     private readonly IConnectionFactory _connectionFactory;
 
     private ConnectionContext _connectionContext;
+    private bool              _isConnecting = false;
 
     private readonly Action<object>                    _onTimerCallback;
     private readonly Action<object>                    _responseExecCallback;
@@ -57,8 +58,6 @@ public class MessageSender : IMessageSender
         _timeoutQueue = new Queue<(uint, long)>();
         ITimerService timerService = services.GetService<ITimerService>();
         timerService.AddInterval(0, 1000, OnTimerCallback, null);
-
-        _ = ConnectAsync(endpoint);
     }
 
     private void OnTimerCallback(ITimer timer)
@@ -72,6 +71,7 @@ public class MessageSender : IMessageSender
     private void SendExecCallback(object obj)
     {
         ActorMessage message = (ActorMessage)obj;
+        message.SenderPId = _localPId;
         if (message.Type == MessageType.Request)
         {
             var rpcCallbackItem = new RpcCallbackItem(message.Tcs, Stopwatch.GetTimestamp());
@@ -93,6 +93,8 @@ public class MessageSender : IMessageSender
 
         if (_connectionContext != null)
             SendAll();
+        else if (!_isConnecting)
+            _ = ConnectAsync();
     }
 
     private void ResponseExecCallback(object obj)
@@ -122,21 +124,35 @@ public class MessageSender : IMessageSender
         {
             if (!_messageDescCollection.TryGet(message.Opcode, out MessageDesc messageDesc))
             {
-                OnResponse(
-                    new ActorMessage(MessageType.Response, 0, 0, new ExceptionResponse("消息描述不存在,无法发送:"),
-                        message.RpcId));
+                if (message.Type.HasRequest()) // rpc可以给它响应一个异常
+                {
+                    OnResponse(ActorMessage.CreateResponse(default, 0, message.RpcId,
+                        new ExceptionResponse($"消息描述不存在,无法发送(不能序列化): {message.Body.GetType().Name}")));
+                }
+                else // msg就只能打印了
+                {
+                    Log.Error("消息描述不存在,无法发送(不能序列化): {Name}", message.Body.GetType().Name);
+                }
+
                 return;
             }
 
             // 反转为当前pid
-            ActorId inverseActorId = new ActorId(_localPId, message.ActorId.Index);
+            ActorId actorId = message.ActorId;
 
             // 预留长度字段
             Span<byte> headSpan = output.GetSpan(4);
             output.Advance(4);
 
-            // 写入header
-            WriteUnmanaged(output, inverseActorId.Value);
+            // 写入actorId
+            WriteUnmanaged(output, actorId.PId);
+            WriteUnmanaged(output, actorId.Type);
+            WriteUnmanaged(output, actorId.Key);
+
+            // 写入发送PID
+            WriteUnmanaged(output, message.SenderPId);
+
+            // 写消息信息
             WriteUnmanaged(output, message.Type);
             WriteUnmanaged(output, message.Opcode);
             if (message.Type.HasRpcField())
@@ -161,6 +177,7 @@ public class MessageSender : IMessageSender
 
     private void OnConnected(object connectionContext)
     {
+        _isConnecting      = false;
         _connectionContext = (ConnectionContext)connectionContext;
         Log.Debug("连接服务端成功: pid={PId} ip={IP}", PId, this.RemoteEntPoint);
         SendAll();
@@ -181,33 +198,33 @@ public class MessageSender : IMessageSender
                 message.Tcs.SetException((Exception)e);
             }
         }
+
+        _connectionContext = null;
+        _isConnecting      = false;
     }
 
-    private async ValueTask ConnectAsync(IPEndPoint endpoint)
+    private async ValueTask ConnectAsync()
     {
-        while (true)
+        try
         {
-            try
-            {
-                // 连接
-                var conn = await _connectionFactory.ConnectAsync(endpoint);
-                _vThread.Schedule(OnConnected, conn);
-                TaskCompletionSource tcs = new TaskCompletionSource();
-                conn.ConnectionClosed.Register(() => tcs.SetResult());
-                await tcs.Task;
-                _vThread.Schedule(OnDisconnected, conn);
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "内部Socket:");
-                _vThread.Schedule(OnConnectionFail, e);
-            }
-            finally
-            {
-                Log.Debug($"连接已断开: 2s后将重连...");
-            }
+            _isConnecting = true;
 
-            await Task.Delay(2000);
+            // 连接
+            var conn = await _connectionFactory.ConnectAsync(this.RemoteEntPoint);
+            _vThread.Schedule(OnConnected, conn);
+            TaskCompletionSource tcs = new TaskCompletionSource();
+            conn.ConnectionClosed.Register(() => tcs.SetResult());
+            await tcs.Task;
+            _vThread.Schedule(OnDisconnected, conn);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "内部Socket:");
+            _vThread.Schedule(OnConnectionFail, e);
+        }
+        finally
+        {
+            Log.Debug($"连接已断开: 2s后将重连...");
         }
     }
 

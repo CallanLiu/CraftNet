@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using CraftNet;
 using CraftNet.Services;
+using Demo.DB;
 using Demo.Services.Network;
 
 namespace Demo;
@@ -50,6 +51,10 @@ public static class Startup
                 services.AddMemoryCache();
             }
         }
+
+        // 注册db相关(只有被使用到才会被创建)
+        services.AddSingleton<IDBManager, DBManger>();
+        services.AddSingleton<IAccountRepository, AccountRepository>();
     }
 
     public static void Configure(this WebApplication webApplication, StartConfig startConfig)

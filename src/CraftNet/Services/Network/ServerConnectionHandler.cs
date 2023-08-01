@@ -65,8 +65,8 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
                     {
                         if (message.Type.HasRequest())
                             message.RpcReply = this;
-                        ActorMailbox mailbox = _actorService.GetMailbox(message.ActorId);
-                        mailbox.Enqueue(message);
+
+                        _actorService.Post(message);
                     }
                 }
             }
@@ -99,8 +99,15 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
         // 直接切割到这个消息的结束位置
         buffer = buffer.Slice(length + 4);
 
-        // 头
-        reader.TryReadLittleEndian(out ulong actorId);
+        // actorId
+        reader.TryReadLittleEndian(out ushort actorPId); // 远端Pid
+        reader.TryReadLittleEndian(out uint actorType);
+        reader.TryReadLittleEndian(out long actorKey);
+        ActorId actorId = new ActorId(actorPId, actorType, actorKey);
+
+        reader.TryReadLittleEndian(out ushort senderPId);
+
+        // 消息信息
         reader.TryRead(out byte tmpType);
         MessageType type = (MessageType)tmpType;
         reader.TryReadLittleEndian(out ushort opcode);
@@ -118,28 +125,32 @@ public class ServerConnectionHandler : ConnectionHandler, IRpcReply
         }
 
         var body = messageDesc.Serializer.Deserialize(messageDesc.MessageType, reader.UnreadSequence);
-        message = new ActorMessage(type, actorId, opcode, (IMessageBase)body, rpcId);
+        message = new ActorMessage(type, actorId, opcode, (IMessageBase)body, rpcId)
+        {
+            SenderPId = senderPId
+        };
+
         return true;
     }
 
     void IRpcReply.OnRpcReply(IResponse resp, ActorMessage context)
     {
-        if (_senderManager.TryGet(context.ActorId.PId, out IMessageSender sender))
+        if (_senderManager.TryGet(context.SenderPId, out IMessageSender sender))
         {
-            sender.Send(new ActorMessage(MessageType.Response, context.ActorId, resp.GetOpcode(), resp, context.RpcId,
-                null, context.Extra));
+            sender.Send(ActorMessage.CreateResponse(context.ActorId, resp.GetOpcode(), context.RpcId, resp,
+                context.Direction));
             return;
         }
 
-        sender = _senderManager.GetOrCreate(context.ActorId.PId);
+        sender = _senderManager.GetOrCreate(context.SenderPId);
         if (sender is null)
         {
             Log.Error("ActorMessage发送响应失败: pid={Pid} 对应Sender不存在!", context.ActorId.PId);
         }
         else
         {
-            sender.Send(new ActorMessage(MessageType.Response, context.ActorId, resp.GetOpcode(), resp, context.RpcId,
-                null, context.Extra));
+            sender.Send(ActorMessage.CreateResponse(context.ActorId, resp.GetOpcode(), context.RpcId, resp,
+                context.Direction));
         }
     }
 }

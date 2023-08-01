@@ -13,13 +13,15 @@ public class LoginController : ControllerBase
      * 此示例通过静态配置，获取Gate服。
      * 想要动态获取可用类【注册中心】相关的中间件
      */
-    private readonly StartConfig   _startConfig;
-    private readonly IActorService _actorService;
+    private readonly StartConfig        _startConfig;
+    private readonly IActorService      _actorService;
+    private readonly IAccountRepository _accountDb;
 
-    public LoginController(StartConfig startConfig, IActorService actorService)
+    public LoginController(StartConfig startConfig, IActorService actorService, IAccountRepository accountDb)
     {
         _startConfig  = startConfig;
         _actorService = actorService;
+        _accountDb    = accountDb;
     }
 
     [HttpGet(nameof(Test))]
@@ -36,12 +38,20 @@ public class LoginController : ControllerBase
     {
         LoginResp loginResp = new LoginResp();
 
-        DBAccount account = await DBAccount.LoginFind(req.Username, req.Password, DateTime.Now, "");
-        if (account is null)
+        AccountModel accountModel = await _accountDb.Login(req.Username, req.Password, DateTime.Now, "");
+        if (accountModel is null)
         {
             // 账号不存在
-            loginResp.Err = Err.Login_AccountNotExist;
-            return loginResp;
+            // loginResp.Err = Err.Login_AccountNotExist;
+            // return loginResp;
+            accountModel = new AccountModel
+            {
+                Username      = req.Username,
+                Password      = req.Password,
+                LastLoginTime = DateTime.Now
+            };
+
+            await _accountDb.Insert(accountModel);
         }
 
         var       gateList      = _startConfig.GetAppConfigs(AppType.Gate);
@@ -52,7 +62,7 @@ public class LoginController : ControllerBase
         Login2G_GetTokenResp login2GGetTokenResp = await _actorService.Call<Login2G_GetTokenResp>(gateAppConfig.ActorId,
             new Login2G_GetTokenReq
             {
-                AccountId = account.Id,
+                AccountId = accountModel.Id,
                 Token     = token
             });
 

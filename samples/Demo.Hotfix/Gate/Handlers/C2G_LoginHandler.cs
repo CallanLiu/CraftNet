@@ -4,7 +4,7 @@ using Serilog;
 
 namespace Demo;
 
-public partial class C2G_LoginGateHandler : RequestHandler<Session, C2G_LoginGateReq, C2G_LoginGateResp>
+public class C2G_LoginGateHandler : RequestHandler<Session, C2G_LoginGateReq, C2G_LoginGateResp>
 {
     private readonly IMemoryCache _memoryCache;
 
@@ -33,6 +33,9 @@ public partial class C2G_LoginGateHandler : RequestHandler<Session, C2G_LoginGat
             _memoryCache.Remove(req.Token);
             Log.Debug("[gate] 玩家登录网关: accountId={AccountId}, token={Token}", accountId, req.Token);
         }
+        
+        // 登录网关成功
+        
 
         reply.Invoke(resp);
         return ValueTask.CompletedTask;

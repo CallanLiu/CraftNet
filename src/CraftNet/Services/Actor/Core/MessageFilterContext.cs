@@ -1,15 +1,17 @@
-﻿namespace CraftNet.Services;
+﻿using System.Reflection;
+
+namespace CraftNet.Services;
 
 public struct MessageFilterContext
 {
-    public readonly  ActorMessage                       Context;
-    private readonly Func<ActorMessage, ValueTask>      _invoke;
+    public readonly  ActorMessage                         Context;
+    private readonly IMessageHandler                      _messageHandler;
     private          IResponseCompletionSource<IResponse> _tmpTcs;
 
-    public MessageFilterContext(ActorMessage context, Func<ActorMessage, ValueTask> invoke)
+    public MessageFilterContext(ActorMessage context, IMessageHandler messageHandler)
     {
-        Context = context;
-        _invoke = invoke;
+        Context         = context;
+        _messageHandler = messageHandler;
     }
 
     /// <summary>
@@ -19,6 +21,9 @@ public struct MessageFilterContext
     /// <returns></returns>
     public async ValueTask<object> Invoke(bool waitInvokeCompleted = false)
     {
+        if (_messageHandler is null)
+            throw new TargetException($"MessageHandler不存在,无法进行调用: Opcode={this.Context.Opcode}");
+
         // 如果是rpc需要获得
         if (this.Context.Type == MessageType.Request)
         {
@@ -27,7 +32,7 @@ public struct MessageFilterContext
             Context.Tcs = tcs;
 
             // 调用handler(不等待整个方法执行完成，只等待响应结果)
-            ValueTask valueTask = _invoke(this.Context);
+            ValueTask valueTask = _messageHandler.Invoke(this.Context);
             if (waitInvokeCompleted)
                 await valueTask;
 
@@ -45,7 +50,7 @@ public struct MessageFilterContext
             return response;
         }
 
-        await _invoke(this.Context);
+        await _messageHandler.Invoke(this.Context);
         return null;
     }
 }

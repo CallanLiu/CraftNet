@@ -6,7 +6,6 @@ namespace CraftNet.Services;
 public interface IMessageHandler
 {
     static abstract ushort Opcode { get; }
-
     ValueTask Invoke(ActorMessage context);
 }
 

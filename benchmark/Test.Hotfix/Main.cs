@@ -1,5 +1,6 @@
 ﻿using Test.Hotfix;
 using CraftNet;
+using CraftNet.Services;
 
 namespace Test;
 
@@ -15,7 +16,7 @@ public static class Main
         if (app.IsFirstLoad)
         {
             // 让app成为actor，使其可以接收消息。
-            actorSystem.CreateActor(app, true);
+            actorSystem.CreateActor(ActorType<App>.Value, app.Id.Value);
         }
 
         actorSystem.RegisterHandler<PingAppReqHandler>();

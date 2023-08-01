@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using CraftNet;
+using CraftNet.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Demo;
@@ -11,19 +12,20 @@ public class Main
 {
     public static void OnLoad(App app)
     {
+        AppConfig appConfig = app.GetComponent<AppConfig>();
+
         IActorSystem actorSystem = app.GetSystem<IActorSystem>();
         if (app.IsFirstLoad)
         {
             // 让每个app都成为一个actor
-            actorSystem.CreateActor(app, true);
+            actorSystem.CreateActor(appConfig.ActorId.Type, appConfig.ActorId.Key);
         }
 
-        AppConfig appConfig = app.GetComponent<AppConfig>();
         switch (appConfig.Type)
         {
             case AppType.Gate:
             {
-                app.AddSystem<IGateSystem, GateSystem>();
+                app.AddSystem<IGateSrv, GateSrv>();
                 break;
             }
         }

@@ -1,8 +1,15 @@
 ﻿using System.Xml;
 using System.Xml.Serialization;
+using CraftNet;
 using CraftNet.Services;
 
 namespace Demo;
+
+public class PropertyConfig
+{
+    [XmlAttribute] public string Name { get; set; }
+    [XmlAttribute] public string Value { get; set; }
+}
 
 public class StartConfig
 {
@@ -12,10 +19,12 @@ public class StartConfig
     [XmlAttribute] public string Name { get; set; }
     [XmlElement("Process")] public ProcessConfig[] Processes { get; set; }
 
+    [XmlElement("Property")] public PropertyConfig[] PropertyConfigs { get; set; }
 
     [XmlIgnore] public ProcessConfig Current { get; private set; }
 
-    [XmlIgnore] private readonly Dictionary<AppType, List<AppConfig>> _type2App = new();
+    [XmlIgnore] private readonly Dictionary<AppType, List<AppConfig>> _type2App   = new();
+    [XmlIgnore] private readonly Dictionary<string, string>           _properties = new();
 
     public IReadOnlyList<AppConfig> GetAppConfigs(AppType type)
     {
@@ -31,6 +40,11 @@ public class StartConfig
         StartConfig config = (StartConfig)serializer.Deserialize(reader);
         config!.PId = pid;
 
+        foreach (var propertyConfig in config.PropertyConfigs)
+        {
+            config._properties.Add(propertyConfig.Name, propertyConfig.Value);
+        }
+
         foreach (var processConfig in config.Processes)
         {
             if (processConfig.Id == pid)
@@ -45,12 +59,18 @@ public class StartConfig
                 }
 
                 appConfig.ProcessConfig = processConfig;
-                appConfig.ActorId       = new ActorId(processConfig.Id, appConfig.Index);
+                appConfig.ActorId       = new ActorId(processConfig.Id, ActorType<App>.Value, appConfig.Index);
                 appConfigs.Add(appConfig);
             }
         }
 
         return config;
+    }
+
+    public string GetProperty(string name)
+    {
+        _properties.TryGetValue(name, out var value);
+        return value;
     }
 }
 
@@ -59,7 +79,7 @@ public class ProcessConfig
     [XmlAttribute] public ushort Id { get; set; }
     [XmlAttribute] public string EndPoint { get; set; }
     [XmlAttribute] public string Urls { get; set; }
-    [XmlElement("App")] public List<AppConfig> AppConfigs { get; set; }
+    [XmlElement("App")] public AppConfig[] AppConfigs { get; set; }
 }
 
 public class AppConfig

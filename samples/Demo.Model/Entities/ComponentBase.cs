@@ -2,8 +2,9 @@
 
 public abstract class ComponentBase : GObject
 {
-    public sealed override void Dispose()
+    public Entity Entity { get; internal set; }
+
+    protected override void OnDestroy()
     {
-        base.Dispose();
     }
 }

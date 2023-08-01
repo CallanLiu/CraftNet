@@ -24,3 +24,4 @@ public interface IRequest : IMessageBase
 public interface IResponse : IMessageBase
 {
 }
+

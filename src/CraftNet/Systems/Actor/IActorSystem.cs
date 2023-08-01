@@ -22,26 +22,29 @@ public interface IActorSystem : ISystemBase<IActorSystem>, ISystemTypeId
     /// <summary>
     /// 创建Actor并使用当前App的调度器
     /// </summary>
-    /// <param name="target"></param>
+    /// <param name="type"></param>
+    /// <param name="key"></param>
     /// <param name="isReentrant">是否消息重入</param>
     /// <returns></returns>
-    ActorId CreateActor(object target, bool isReentrant = false);
+    IActor CreateActor(uint type, long key, bool isReentrant = false);
 
     /// <summary>
     /// 创建Actor并使用当前App的调度器与指定一个拦截器
     /// </summary>
-    /// <param name="target"></param>
+    /// <param name="type"></param>
+    /// <param name="key"></param>
     /// <param name="isReentrant"></param>
     /// <typeparam name="TFilter"></typeparam>
     /// <returns></returns>
-    ActorId CreateActor<TFilter>(object target, bool isReentrant = false) where TFilter : IMessageFilter;
+    IActor CreateActor<TFilter>(uint type, long key, bool isReentrant = false) where TFilter : IMessageFilter;
 
     /// <summary>
     /// 获取Actor消息队列
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="type"></param>
+    /// <param name="key"></param>
     /// <returns></returns>
-    ActorMailbox GetActorMailbox(ActorId id);
+    IActor GetActor(uint type, long key);
 
     /// <summary>
     /// 发送消息

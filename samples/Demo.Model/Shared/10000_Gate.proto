@@ -30,3 +30,14 @@ message C2G_LoginGateResp
 {
   int32 Err = 1;
 }
+
+// 登出
+message C2G_LogoutReq
+{
+  
+}
+
+message C2G_LogoutResp
+{
+  
+}

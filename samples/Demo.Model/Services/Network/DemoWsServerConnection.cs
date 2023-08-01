@@ -59,8 +59,8 @@ public class DemoWsServerConnection : WebSocketConnection
         }
 
         // 已经处于线程安全环境，直接给入队消息即可。
-        _session.Mailbox.UnsafeEnqueue(new ActorMessage(packet.MsgType, _session.ActorId, packet.Opcode, packet.Body,
-            packet.RpcId, extra: 1));
+        _session.Actor.UnsafePost(new ActorMessage(packet.MsgType, _session.Actor.ActorId, packet.Opcode, packet.Body,
+            packet.RpcId, direction: 1));
     }
 
     protected override void OnSend(PipeWriter output, in WaitSendPacket packet)

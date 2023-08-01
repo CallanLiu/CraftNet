@@ -26,7 +26,7 @@ public class SessionMessageFilter : MessageFilter<Session>
     protected override async ValueTask<bool> On(Session self, MessageFilterContext context)
     {
         ActorMessage actorMessage = context.Context;
-        if (actorMessage.Extra == 0) // 默认值0，内部处理。
+        if (actorMessage.Direction == 0) // 默认值0，内部处理。
         {
             if (!IsOuterMessage(actorMessage.Opcode)) return true;
 
@@ -43,16 +43,16 @@ public class SessionMessageFilter : MessageFilter<Session>
             return false;
         }
 
-        Console.WriteLine($"拦截Agent消息:{context.Context.Opcode}");
+        Console.WriteLine($"拦截消息:{context.Context.Opcode}");
 
         // 外部消息: 
         //  1.收到客户端的Message/Request
         //  2.内部发送给Session想回给客户端的Message/Response
         // 无法区分Message方向，需要个标记，表示消息方向。是来自客户端还是来自内部的Actor.
 
-        if (actorMessage.Extra == 1) // Extra=1客户端发上来的消息
+        if (actorMessage.Direction == 1) // Extra=1客户端发上来的消息
         {
-            // Agent自己处理
+            // Session自己处理
             if (actorMessage.Opcode < 20000) // 都是网关处理的消息
             {
                 object result = await context.Invoke();
@@ -70,13 +70,13 @@ public class SessionMessageFilter : MessageFilter<Session>
             // 转发
             if (actorMessage.Type == MessageType.Message)
             {
-                _actorService.Post(0, actorMessage.Type, actorMessage.Opcode, 0, actorMessage.Body);
+                _actorService.Post(ActorMessage.CreateMessage(new ActorId(), actorMessage.Opcode, actorMessage.Body));
             }
             else // IRequest
             {
                 var tcs = ResponseCompletionSourcePool.Get<IResponse>();
-                _actorService.Post(0, actorMessage.Type, actorMessage.Opcode, actorMessage.RpcId,
-                    actorMessage.Body, tcs);
+                _actorService.Post(ActorMessage.CreateRequest(new ActorId(), actorMessage.Opcode, actorMessage.RpcId,
+                    actorMessage.Body, tcs));
                 IResponse response = await tcs.AsValueTask();
                 self.Reply(response.GetOpcode(), actorMessage.RpcId, response);
             }

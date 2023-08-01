@@ -9,13 +9,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CraftNet;
 
-public interface IXGServerBuilder
+public interface ICraftNetServerBuilder
 {
     IPEndPoint EndPoint { get; set; }
     void AddPlugin(string name);
 }
 
-internal class XGServerBuilder : IXGServerBuilder
+internal class CraftNetServerBuilder : ICraftNetServerBuilder
 {
     public readonly HashSet<string> Plugins = new HashSet<string>();
 
@@ -29,9 +29,10 @@ internal class XGServerBuilder : IXGServerBuilder
 
 public static class HostBuilderExtensions
 {
-    public static IWebHostBuilder UseCraftNet(this IWebHostBuilder self, ushort pid, Action<IXGServerBuilder> action)
+    public static IWebHostBuilder UseCraftNet(this IWebHostBuilder self, ushort pid,
+        Action<ICraftNetServerBuilder> action)
     {
-        XGServerBuilder serverBuilder = new XGServerBuilder();
+        CraftNetServerBuilder serverBuilder = new CraftNetServerBuilder();
         action?.Invoke(serverBuilder);
         self.ConfigureServices(services =>
         {
@@ -39,7 +40,13 @@ public static class HostBuilderExtensions
             services.TryAddSingleton<IPluginAssemblyService>(new PluginAssemblyService(serverBuilder.Plugins.ToList()));
 
             // 消息相关
-            services.TryAddSingleton<IMessageDescCollection, MessageDescCollection>();
+            services.TryAddSingleton<IMessageDescCollection>(f =>
+            {
+                MessageDescCollection messageDescCollection =
+                    new MessageDescCollection(f.GetService<IMessageSerializerProvider>());
+                messageDescCollection.Add(typeof(ExceptionResponse), 0, new ExceptionResponseSerializer());
+                return messageDescCollection;
+            });
             services.TryAddSingleton<IMessageSerializerProvider, DefaultMessageSerializerProvider>();
             services.TryAddSingleton<IActorService, ActorService>();
             services.TryAddSingleton<ISenderManager, SenderManager>();

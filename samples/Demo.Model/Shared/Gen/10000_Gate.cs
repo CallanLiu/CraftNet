@@ -49,4 +49,20 @@ namespace Demo
             
     }
     
+    [ProtoContract]
+    public partial class C2G_LogoutReq : IRequest, IMessageMeta
+    {
+        public static ushort Opcode => 10005;
+        ushort IMessageBase.GetOpcode() => Opcode;
+            
+    }
+    
+    [ProtoContract]
+    public partial class C2G_LogoutResp : IResponse, IMessageMeta
+    {
+        public static ushort Opcode => 10006;
+        ushort IMessageBase.GetOpcode() => Opcode;
+            
+    }
+    
 }

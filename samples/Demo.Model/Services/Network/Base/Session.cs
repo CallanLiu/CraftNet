@@ -11,6 +11,8 @@ public class Session : Entity
 {
     private readonly SendToClientAction _sendToClient;
 
+    public readonly uint Id;
+
     /// <summary>
     /// 客户端的IP地址
     /// </summary>
@@ -19,21 +21,19 @@ public class Session : Entity
     /// <summary>
     /// 与Session相关的ActorId
     /// </summary>
-    public ActorId ActorId { get; set; }
-
-    /// <summary>
-    /// Actor消息队列
-    /// </summary>
-    public ActorMailbox Mailbox { get; set; }
+    public readonly IActor Actor;
 
     // 用于加密
     public XRandom InRandom  = new XRandom(0);
     public XRandom OutRandom = new XRandom(0);
 
-    public Session(IPEndPoint clientAddress, SendToClientAction sendToClient)
+    public Session(uint id, IActor actor, IPEndPoint clientAddress, SendToClientAction sendToClient)
     {
+        this.Id            = id;
+        this.Actor         = actor;
         this._sendToClient = sendToClient;
         this.ClientAddress = clientAddress;
+        this.Actor.Target  = this;
     }
 
     /// <summary>

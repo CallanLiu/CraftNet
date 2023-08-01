@@ -5,8 +5,8 @@ namespace CraftNet;
 [StructLayout(LayoutKind.Explicit)]
 public readonly struct AppId
 {
-    [FieldOffset(0)] public readonly ushort PId;   // 最多65535个进程
-    [FieldOffset(2)] public readonly ushort Index; // 最多65535个App
+    [FieldOffset(0)] public readonly uint   Index;
+    [FieldOffset(6)] public readonly ushort PId; // 最多65535个进程
     [FieldOffset(0)] public readonly uint   Value;
 
     public bool IsValid() => PId != 0;
